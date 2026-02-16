@@ -1,0 +1,63 @@
+[2025-12-17 07:30:26] REQUEST METHOD: POST
+CONTENT_TYPE: application/json
+RAW INPUT (first 500 chars): {"recruiterId":3,"title":"Senior dev","description":"Senior dev","companyName":"","location":"","salaryRange":"","employmentType":"Full-time","experienceLevel":"","skillsRequired":[]}
+DECODED INPUT: Array
+(
+    [recruiterId] => 3
+    [title] => Senior dev
+    [description] => Senior dev
+    [companyName] => 
+    [location] => 
+    [salaryRange] => 
+    [employmentType] => Full-time
+    [experienceLevel] => 
+    [skillsRequired] => Array
+        (
+        )
+
+)
+
+Attempting database connection...
+EXCEPTION: php_network_getaddresses: getaddrinfo for mysql.railway.internal failed: No such host is known. 
+[2025-12-17 10:25:12] REQUEST METHOD: POST
+CONTENT_TYPE: application/json
+RAW INPUT (first 500 chars): {"recruiterId":3,"title":"dev","description":"dev","companyName":"","location":"","salaryRange":"","employmentType":"Full-time","experienceLevel":"","skillsRequired":[]}
+DECODED INPUT: Array
+(
+    [recruiterId] => 3
+    [title] => dev
+    [description] => dev
+    [companyName] => 
+    [location] => 
+    [salaryRange] => 
+    [employmentType] => Full-time
+    [experienceLevel] => 
+    [skillsRequired] => Array
+        (
+        )
+
+)
+
+Attempting database connection...
+EXCEPTION: Database connection failed
+[2025-12-17 10:29:49] REQUEST METHOD: POST
+CONTENT_TYPE: application/json
+RAW INPUT (first 500 chars): {"recruiterId":3,"title":"as","description":"as","companyName":"","location":"","salaryRange":"","employmentType":"Full-time","experienceLevel":"","skillsRequired":[]}
+DECODED INPUT: Array
+(
+    [recruiterId] => 3
+    [title] => as
+    [description] => as
+    [companyName] => 
+    [location] => 
+    [salaryRange] => 
+    [employmentType] => Full-time
+    [experienceLevel] => 
+    [skillsRequired] => Array
+        (
+        )
+
+)
+
+Attempting database connection...
+EXCEPTION: Database connection failed

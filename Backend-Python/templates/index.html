@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Prep Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .spinner {
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-2xl mx-auto">
+        <div id="upload-container" class="bg-white p-8 rounded-xl shadow-lg transition-all duration-500">
+            <h1 class="text-3xl font-bold text-center text-gray-900 mb-2">AI Interview Prep Agent</h1>
+            <p class="text-center text-gray-500 mb-8">Upload your resume and the job description to start a tailored mock interview.</p>
+            <form id="interview-form">
+                <div class="space-y-6">
+                    <div>
+                        <label for="resume" class="block text-sm font-medium text-gray-700 mb-2">Your Resume (PDF)</label>
+                        <input type="file" name="resume" id="resume" required accept=".pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors duration-200">
+                    </div>
+                    <div>
+                        <label for="job_description" class="block text-sm font-medium text-gray-700 mb-2">Job Description (PDF)</label>
+                        <input type="file" name="job_description" id="job_description" required accept=".pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors duration-200">
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" id="start-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 flex items-center justify-center">
+                        <span id="start-button-text">Start Mock Interview</span>
+                        <div id="start-spinner" class="spinner w-5 h-5 rounded-full border-2 border-t-blue-500 border-gray-200 hidden ml-3"></div>
+                    </button>
+                </div>
+            </form>
+            <div id="error-message" class="mt-4 text-center text-red-500 font-medium hidden"></div>
+        </div>
+
+        <div id="interview-container" class="bg-white p-8 rounded-xl shadow-lg hidden transition-all duration-500">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Interview Question</h2>
+                <span id="question-counter" class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full"></span>
+            </div>
+            
+            <div id="question-box" class="bg-blue-50 p-6 rounded-lg text-blue-900 font-medium text-lg min-h-[100px] flex items-center">
+                <p id="question-text"></p>
+            </div>
+
+            <div class="mt-6">
+                <label for="user-answer" class="block text-sm font-medium text-gray-700 mb-2">Your Answer:</label>
+                <textarea id="user-answer" rows="6" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Type your answer here..."></textarea>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button id="submit-answer-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 flex items-center justify-center">
+                    <span id="submit-button-text">Submit Answer</span>
+                    <div id="submit-spinner" class="spinner w-5 h-5 rounded-full border-2 border-t-blue-500 border-gray-200 hidden ml-3"></div>
+                </button>
+            </div>
+            
+            <div id="feedback-container" class="mt-8 border-t pt-6 hidden">
+                 <h3 class="text-xl font-bold text-gray-900 mb-4">Feedback on Your Answer:</h3>
+                 <div id="feedback-content" class="bg-green-50 text-green-900 p-4 rounded-lg space-y-2"></div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button id="next-question-button" class="bg-gray-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 hidden">Next Question</button>
+            </div>
+
+            <div id="end-container" class="text-center py-8 hidden">
+                <h2 class="text-2xl font-bold text-green-600">Mock Interview Complete!</h2>
+                <p class="text-gray-600 mt-2">Well done! You've completed all the questions.</p>
+                <button id="restart-button" class="mt-6 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">Start a New Interview</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadContainer = document.getElementById('upload-container');
+        const interviewContainer = document.getElementById('interview-container');
+        const interviewForm = document.getElementById('interview-form');
+        const startButton = document.getElementById('start-button');
+        const startButtonText = document.getElementById('start-button-text');
+        const startSpinner = document.getElementById('start-spinner');
+        const errorMessage = document.getElementById('error-message');
+
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const userAnswer = document.getElementById('user-answer');
+        const submitAnswerButton = document.getElementById('submit-answer-button');
+        const submitButtonText = document.getElementById('submit-button-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+        
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackContent = document.getElementById('feedback-content');
+        const nextQuestionButton = document.getElementById('next-question-button');
+        
+        const endContainer = document.getElementById('end-container');
+        const restartButton = document.getElementById('restart-button');
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+
+        interviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(interviewForm);
+            if (!formData.get('resume').size || !formData.get('job_description').size) {
+                showError("Please select both a resume and a job description file.");
+                return;
+            }
+            
+            setLoading(startButton, startButtonText, startSpinner, true, 'Generating Questions...');
+            showError('');
+
+            try {
+                const response = await fetch('/start-interview', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.questions && data.questions.length > 0 && !data.questions[0].toLowerCase().includes('error')) {
+                    questions = data.questions;
+                    currentQuestionIndex = 0;
+                    uploadContainer.classList.add('hidden');
+                    interviewContainer.classList.remove('hidden');
+                    displayQuestion();
+                } else {
+                    throw new Error(data.questions[0] || 'Failed to generate questions. Please try again.');
+                }
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setLoading(startButton, startButtonText, startSpinner, false, 'Start Mock Interview');
+            }
+        });
+
+        submitAnswerButton.addEventListener('click', async () => {
+            const answer = userAnswer.value.trim();
+            if (!answer) {
+                alert('Please provide an answer.');
+                return;
+            }
+
+            setLoading(submitAnswerButton, submitButtonText, submitSpinner, true, 'Evaluating...');
+
+            try {
+                const response = await fetch('/evaluate-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: questions[currentQuestionIndex],
+                        answer: answer,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.feedback && !data.feedback.error) {
+                    displayFeedback(data.feedback);
+                    submitAnswerButton.classList.add('hidden');
+                    nextQuestionButton.classList.remove('hidden');
+                } else {
+                     throw new Error(data.feedback.error || 'Failed to get feedback.');
+                }
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                setLoading(submitAnswerButton, submitButtonText, submitSpinner, false, 'Submit Answer');
+            }
+        });
+
+        nextQuestionButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+            } else {
+                showEndScreen();
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        function displayQuestion() {
+            questionText.textContent = questions[currentQuestionIndex];
+            questionCounter.textContent = `${currentQuestionIndex + 1} / ${questions.length}`;
+            userAnswer.value = '';
+            feedbackContainer.classList.add('hidden');
+            feedbackContent.innerHTML = '';
+            submitAnswerButton.classList.remove('hidden');
+            nextQuestionButton.classList.add('hidden');
+            userAnswer.focus();
+        }
+
+        function displayFeedback(feedbackData) {
+            feedbackContent.innerHTML = ''; // Clear previous feedback
+
+            if (feedbackData.error) {
+                feedbackContent.textContent = feedbackData.error;
+                feedbackContainer.classList.remove('hidden');
+                return;
+            }
+
+            // Score
+            const scoreElement = document.createElement('p');
+            scoreElement.innerHTML = `<strong>Score:</strong> ${feedbackData.score || 'N/A'} / 10`;
+            feedbackContent.appendChild(scoreElement);
+
+            // Strength
+            if (feedbackData.strength && feedbackData.strength.length > 0) {
+                const strengthHeading = document.createElement('p');
+                strengthHeading.innerHTML = '<strong class="mt-4 inline-block">Strength:</strong>';
+                feedbackContent.appendChild(strengthHeading);
+                const strengthList = document.createElement('ul');
+                strengthList.className = 'list-disc list-inside space-y-1 ml-2';
+                feedbackData.strength.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    strengthList.appendChild(li);
+                });
+                feedbackContent.appendChild(strengthList);
+            }
+
+            // Improvement
+            if (feedbackData.improvement && feedbackData.improvement.length > 0) {
+                const improvementHeading = document.createElement('p');
+                improvementHeading.innerHTML = '<strong class="mt-4 inline-block">Improvement:</strong>';
+                feedbackContent.appendChild(improvementHeading);
+                const improvementList = document.createElement('ul');
+                improvementList.className = 'list-disc list-inside space-y-1 ml-2';
+                feedbackData.improvement.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    improvementList.appendChild(li);
+                });
+                feedbackContent.appendChild(improvementList);
+            }
+
+            feedbackContainer.classList.remove('hidden');
+        }
+
+        function showEndScreen() {
+            interviewContainer.innerHTML = ''; // Clear the interview content
+            endContainer.classList.remove('hidden');
+            interviewContainer.appendChild(endContainer); // Move end container inside
+        }
+
+        function setLoading(button, textElement, spinner, isLoading, loadingText) {
+            button.disabled = isLoading;
+            if (isLoading) {
+                textElement.textContent = loadingText;
+                spinner.classList.remove('hidden');
+            } else {
+                textElement.textContent = button.id === 'start-button' ? 'Start Mock Interview' : 'Submit Answer';
+                spinner.classList.add('hidden');
+            }
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.toggle('hidden', !message);
+        }
+    </script>
+</body>
+</html>
+

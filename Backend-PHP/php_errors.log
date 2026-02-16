@@ -1,0 +1,8 @@
+[20-Jan-2026 04:20:33 Europe/Berlin] Resume save error: Database connection failed
+[20-Jan-2026 04:22:02 Europe/Berlin] Resume save error: Database connection failed
+[20-Jan-2026 04:26:43 Europe/Berlin] Resume save error: Database connection failed
+[20-Jan-2026 04:26:59 Europe/Berlin] Resume save error: Database connection failed
+[10-Feb-2026 08:07:21 Europe/Berlin] Resume save error: SQLSTATE[08S01]: Communication link failure: 1153 Got a packet bigger than 'max_allowed_packet' bytes
+[10-Feb-2026 08:07:32 Europe/Berlin] Resume save error: SQLSTATE[08S01]: Communication link failure: 1153 Got a packet bigger than 'max_allowed_packet' bytes
+[10-Feb-2026 08:07:39 Europe/Berlin] Resume save error: SQLSTATE[08S01]: Communication link failure: 1153 Got a packet bigger than 'max_allowed_packet' bytes
+[10-Feb-2026 08:09:58 Europe/Berlin] Resume save error: SQLSTATE[08S01]: Communication link failure: 1153 Got a packet bigger than 'max_allowed_packet' bytes
