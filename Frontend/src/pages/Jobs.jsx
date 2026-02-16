@@ -8,12 +8,12 @@ export default function Jobs() {
     <>
       <header><h1>Find Your Opportunity</h1></header>
       <nav>
-        <a onClick={() => navigate("/")}>Home</a>
-        <a onClick={() => navigate("/candidates")}>Candidates</a>
-        <a onClick={() => navigate("/recruiters")}>Recruiters</a>
-        <a onClick={() => navigate("/collegeadmins")}>College Admins</a>
-        <a onClick={() => navigate("/jobs")}>Jobs</a>
-        <a onClick={() => navigate("/login")}>Login</a>
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Home</a>
+        <a href="/candidates" onClick={(e) => { e.preventDefault(); navigate("/candidates"); }}>Candidates</a>
+        <a href="/recruiters" onClick={(e) => { e.preventDefault(); navigate("/recruiters"); }}>Recruiters</a>
+        <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }}>College Admins</a>
+        <a href="/jobs" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }}>Jobs</a>
+        <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>Login</a>
       </nav>
 
       <main className="container">

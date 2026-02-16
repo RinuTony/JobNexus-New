@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Tag, Search, X } from "lucide-react";
+import { Plus, Tag, Search, X } from "lucide-react";
 
 const SkillsStep = ({ data, updateData }) => {
   const skills = data.skills || [];

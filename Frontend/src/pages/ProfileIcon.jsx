@@ -134,9 +134,9 @@ export default function ProfileIcon() {
               <h4>{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}</h4>
               <p className="user-email">{user?.email}</p>
               <p className="user-role">
-                {user?.role === "candidate" && "👤 Candidate"}
-                {user?.role === "recruiter" && "💼 Recruiter"}
-                {user?.role === "admin" && "🏛️ College Admin"}
+                {user?.role === "candidate" && "ðŸ‘¤ Candidate"}
+                {user?.role === "recruiter" && "ðŸ’¼ Recruiter"}
+                {user?.role === "admin" && "ðŸ›ï¸ College Admin"}
               </p>
             </div>
           </div>
@@ -154,31 +154,6 @@ export default function ProfileIcon() {
               <span>My Profile</span>
             </button>
 
-<<<<<<< HEAD
-=======
-            <button 
-              className="dropdown-item"
-              onClick={() => handleMenuItemClick("/settings")}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.16 9.12C21.35 8.94 21.38 8.65 21.24 8.44L19.36 5.72C19.23 5.53 19 5.45 18.8 5.51L16.34 6.3C15.88 5.95 15.38 5.66 14.85 5.45L14.47 2.85C14.45 2.63 14.27 2.46 14.05 2.46H9.95C9.73 2.46 9.55 2.63 9.53 2.85L9.15 5.45C8.62 5.66 8.12 5.95 7.66 6.3L5.2 5.51C5 5.45 4.77 5.53 4.64 5.72L2.76 8.44C2.62 8.65 2.65 8.94 2.84 9.12L4.86 11.06C4.82 11.37 4.8 11.68 4.8 12C4.8 12.32 4.82 12.63 4.86 12.94L2.84 14.88C2.65 15.06 2.62 15.35 2.76 15.56L4.64 18.28C4.77 18.47 5 18.55 5.2 18.49L7.66 17.7C8.12 18.05 8.62 18.34 9.15 18.55L9.53 21.15C9.55 21.37 9.73 21.54 9.95 21.54H14.05C14.27 21.54 14.45 21.37 14.47 21.15L14.85 18.55C15.38 18.34 15.88 18.05 16.34 17.7L18.8 18.49C19 18.55 19.23 18.47 19.36 18.28L21.24 15.56C21.38 15.35 21.35 15.06 21.16 14.88L19.14 12.94ZM12 15.6C10.29 15.6 8.9 14.21 8.9 12.5C8.9 10.79 10.29 9.4 12 9.4C13.71 9.4 15.1 10.79 15.1 12.5C15.1 14.21 13.71 15.6 12 15.6Z" fill="currentColor"/>
-              </svg>
-              <span>Settings</span>
-            </button>
-
-            {user?.role === "candidate" && (
-              <button 
-                className="dropdown-item"
-                onClick={() => handleMenuItemClick("/my-resume")}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" fill="currentColor"/>
-                </svg>
-                <span>My Resume</span>
-              </button>
-            )}
-
->>>>>>> upstream/main
             {user?.role === "recruiter" && (
               <button 
                 className="dropdown-item"
@@ -207,8 +182,4 @@ export default function ProfileIcon() {
       )}
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> upstream/main

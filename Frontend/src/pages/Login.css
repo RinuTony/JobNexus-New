@@ -1,11 +1,7 @@
 /* Login.css - Compact Version */
 .login-page-compact {
   min-height: 100vh;
-<<<<<<< HEAD
   background: #EFECE3;
-=======
-  background: white;
->>>>>>> upstream/main
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   padding: 2rem;
 }
@@ -16,11 +12,7 @@
 }
 
 .back-link {
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #64748b;
->>>>>>> upstream/main
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -31,11 +23,7 @@
 }
 
 .back-link:hover {
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #4f46e5;
->>>>>>> upstream/main
 }
 
 /* Main Container */
@@ -55,30 +43,18 @@
   font-weight: 800;
   margin: 0 0 0.5rem 0;
   letter-spacing: -1px;
-<<<<<<< HEAD
   color: #000000;
 }
 
 .logo-gradient {
   background: #000000;
-=======
-  color: #1e293b;
-}
-
-.logo-gradient {
-  background: black;
->>>>>>> upstream/main
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .tagline-compact {
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #64748b;
->>>>>>> upstream/main
   margin: 0;
   font-size: 1rem;
 }
@@ -101,17 +77,10 @@
   align-items: center;
   justify-content: center;
   padding: 1rem 0.5rem;
-<<<<<<< HEAD
   border: 2px solid #8FABD4;
   background: white;
   border-radius: 12px;
   color: #4A70A9;
-=======
-  border: 2px solid #e2e8f0;
-  background: white;
-  border-radius: 12px;
-  color: #64748b;
->>>>>>> upstream/main
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -119,26 +88,15 @@
 }
 
 .role-tab-compact:hover {
-<<<<<<< HEAD
   border-color: #4A70A9;
-=======
-  border-color: #cbd5e1;
->>>>>>> upstream/main
   transform: translateY(-2px);
 }
 
 .role-tab-compact.active {
-<<<<<<< HEAD
   border-color: #4A70A9;
   background: #4A70A9;
   color: white;
   box-shadow: 0 4px 12px rgba(74, 112, 169, 0.3);
-=======
-  border-color: #4f46e5;
-  background: #4f46e5;
-  color: white;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
->>>>>>> upstream/main
 }
 
 .role-icon {
@@ -148,21 +106,12 @@
 
 .role-description-compact {
   text-align: center;
-<<<<<<< HEAD
   color: #4A70A9;
   font-size: 0.9rem;
   padding: 0.75rem;
   background: white;
   border-radius: 8px;
   border: 1px solid #8FABD4;
-=======
-  color: #64748b;
-  font-size: 0.9rem;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
->>>>>>> upstream/main
 }
 
 /* Form Card */
@@ -170,13 +119,8 @@
   background: white;
   border-radius: 16px;
   padding: 2.5rem;
-<<<<<<< HEAD
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border: 1px solid #8FABD4;
-=======
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
->>>>>>> upstream/main
 }
 
 .form-header-compact {
@@ -188,11 +132,7 @@
 
 .form-header-compact h2 {
   margin: 0;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #1e293b;
->>>>>>> upstream/main
   font-size: 1.8rem;
   font-weight: 700;
 }
@@ -200,11 +140,7 @@
 .toggle-form-btn {
   background: none;
   border: none;
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #4f46e5;
->>>>>>> upstream/main
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -234,25 +170,16 @@
 .form-group-compact input {
   width: 100%;
   padding: 1rem 1.2rem;
-<<<<<<< HEAD
   border: 1.5px solid #8FABD4;
-=======
-  border: 1.5px solid #e2e8f0;
->>>>>>> upstream/main
   border-radius: 10px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   box-sizing: border-box;
-<<<<<<< HEAD
   background: #EFECE3;
-=======
-  background: #f8fafc;
->>>>>>> upstream/main
 }
 
 .form-group-compact input:focus {
   outline: none;
-<<<<<<< HEAD
   border-color: #4A70A9;
   background: white;
   box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
@@ -260,24 +187,11 @@
 
 .form-group-compact input::placeholder {
   color: #8FABD4;
-=======
-  border-color: #4f46e5;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.form-group-compact input::placeholder {
-  color: #94a3b8;
->>>>>>> upstream/main
 }
 
 .password-hint-compact {
   margin: 0.5rem 0 0 0;
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #94a3b8;
->>>>>>> upstream/main
   font-size: 0.8rem;
 }
 
@@ -287,11 +201,7 @@
 }
 
 .forgot-link-compact {
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #4f46e5;
->>>>>>> upstream/main
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -305,11 +215,7 @@
 .submit-btn-compact {
   width: 100%;
   padding: 1rem;
-<<<<<<< HEAD
   background: #4A70A9;
-=======
-  background: indigo;
->>>>>>> upstream/main
   color: white;
   border: none;
   border-radius: 10px;
@@ -324,14 +230,9 @@
 }
 
 .submit-btn-compact:hover:not(:disabled) {
-<<<<<<< HEAD
   background: #8FABD4;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(74, 112, 169, 0.3);
-=======
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
->>>>>>> upstream/main
 }
 
 .submit-btn-compact:disabled {
@@ -358,11 +259,7 @@
   align-items: center;
   text-align: center;
   margin: 1.5rem 0;
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #94a3b8;
->>>>>>> upstream/main
   font-size: 0.85rem;
 }
 
@@ -370,11 +267,7 @@
 .divider-compact::after {
   content: "";
   flex: 1;
-<<<<<<< HEAD
   border-bottom: 1px solid #8FABD4;
-=======
-  border-bottom: 1px solid #e2e8f0;
->>>>>>> upstream/main
 }
 
 .divider-compact span {
@@ -390,11 +283,7 @@
 
 .social-btn-compact {
   padding: 0.85rem;
-<<<<<<< HEAD
   border: 1.5px solid #8FABD4;
-=======
-  border: 1.5px solid #e2e8f0;
->>>>>>> upstream/main
   background: white;
   border-radius: 10px;
   font-weight: 500;
@@ -408,7 +297,6 @@
 }
 
 .social-btn-compact:hover {
-<<<<<<< HEAD
   border-color: #4A70A9;
   background: #EFECE3;
 }
@@ -419,47 +307,23 @@
 
 .social-btn-compact.github {
   color: #000000;
-=======
-  border-color: #cbd5e1;
-  background: #f8fafc;
-}
-
-.social-btn-compact.google {
-  color: #374151;
-}
-
-.social-btn-compact.github {
-  color: #374151;
->>>>>>> upstream/main
 }
 
 /* Terms */
 .terms-compact {
   text-align: center;
   padding-top: 1.5rem;
-<<<<<<< HEAD
   border-top: 1px solid #8FABD4;
-=======
-  border-top: 1px solid #e2e8f0;
->>>>>>> upstream/main
 }
 
 .terms-compact p {
   margin: 0;
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #94a3b8;
->>>>>>> upstream/main
   font-size: 0.85rem;
 }
 
 .terms-compact a {
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #4f46e5;
->>>>>>> upstream/main
   text-decoration: none;
   font-weight: 500;
 }

@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 export default function CollegeAdmins() {
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.preventDefault();
     // Add your logout logic here
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
@@ -17,20 +17,15 @@ export default function CollegeAdmins() {
     <>
       <header><h1>College Admin Dashboard</h1></header>
       
-=======
-  return (
-    <>
-      <header><h1>College Admin Dashboard</h1></header>
->>>>>>> upstream/main
       <nav>
-        <a onClick={() => navigate("/")}>Home</a>
-        <a onClick={() => navigate("/candidates")}>Candidates</a>
-        <a onClick={() => navigate("/recruiters")}>Recruiters</a>
-        <a onClick={() => navigate("/collegeadmins")}>College Admins</a>
-        <a onClick={() => navigate("/jobs")}>Jobs</a>
-<<<<<<< HEAD
-        <a onClick={() => navigate("/profile")}>Profile</a>
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Home</a>
+        <a href="/candidates" onClick={(e) => { e.preventDefault(); navigate("/candidates"); }}>Candidates</a>
+        <a href="/recruiters" onClick={(e) => { e.preventDefault(); navigate("/recruiters"); }}>Recruiters</a>
+        <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }}>College Admins</a>
+        <a href="/jobs" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }}>Jobs</a>
+        <a href="/profile" onClick={(e) => { e.preventDefault(); navigate("/profile"); }}>Profile</a>
         <a 
+          href="/login"
           onClick={handleLogout}
           style={{
             marginLeft: "auto",
@@ -41,9 +36,6 @@ export default function CollegeAdmins() {
         >
           Logout
         </a>
-=======
-        <a onClick={() => navigate("/login")}>Login</a>
->>>>>>> upstream/main
       </nav>
 
       <main className="container">
@@ -75,8 +67,4 @@ export default function CollegeAdmins() {
       <footer>&copy; 2025 Job Nexus</footer>
     </>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> upstream/main

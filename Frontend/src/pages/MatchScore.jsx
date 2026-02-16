@@ -14,12 +14,12 @@ export function Candidates() {
       </header>
       
       <nav className="bg-white shadow-sm p-4 flex gap-4">
-        <a onClick={() => navigate("/")} className="cursor-pointer hover:text-indigo-600">Home</a>
-        <a onClick={() => navigate("/candidates")} className="cursor-pointer hover:text-indigo-600">Candidates</a>
-        <a onClick={() => navigate("/recruiters")} className="cursor-pointer hover:text-indigo-600">Recruiters</a>
-        <a onClick={() => navigate("/collegeadmins")} className="cursor-pointer hover:text-indigo-600">College Admins</a>
-        <a onClick={() => navigate("/jobs")} className="cursor-pointer hover:text-indigo-600">Jobs</a>
-        <a onClick={() => navigate("/login")} className="cursor-pointer hover:text-indigo-600">Login</a>
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="cursor-pointer hover:text-indigo-600">Home</a>
+        <a href="/candidates" onClick={(e) => { e.preventDefault(); navigate("/candidates"); }} className="cursor-pointer hover:text-indigo-600">Candidates</a>
+        <a href="/recruiters" onClick={(e) => { e.preventDefault(); navigate("/recruiters"); }} className="cursor-pointer hover:text-indigo-600">Recruiters</a>
+        <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }} className="cursor-pointer hover:text-indigo-600">College Admins</a>
+        <a href="/jobs" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }} className="cursor-pointer hover:text-indigo-600">Jobs</a>
+        <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }} className="cursor-pointer hover:text-indigo-600">Login</a>
       </nav>
 
       <main className="container mx-auto p-6 max-w-4xl">
@@ -34,9 +34,9 @@ export function Candidates() {
               Upload
             </button>
           </form>
-          <a className="inline-block mt-4 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300" href="#">
+          <button type="button" className="inline-block mt-4 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
             Build Resume Online
-          </a>
+          </button>
         </section>
 
         <section className="bg-white rounded-lg shadow-md p-6 mb-6">

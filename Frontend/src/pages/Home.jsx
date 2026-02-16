@@ -8,81 +8,9 @@ export default function Home() {
   const loggedIn = localStorage.getItem("loggedIn") === "true";
   const userRole = localStorage.getItem("userRole");
 
-  const handleNavigation = (path) => {
-    if (loggedIn) {
-<<<<<<< HEAD
-=======
-      // Check if user has access to the requested path based on their role
->>>>>>> upstream/main
-      const roleAccessMap = {
-        "/candidates": ["candidate"],
-        "/recruiters": ["recruiter"],
-        "/collegeadmins": ["admin"],
-<<<<<<< HEAD
-        "/jobs": ["candidate", "recruiter", "admin"],
-      };
-
-      if (roleAccessMap[path]) {
-        if (!roleAccessMap[path].includes(userRole)) {
-          alert(`Access denied. This section is for ${roleAccessMap[path].join('/')} only.`);
-          
-=======
-        "/jobs": ["candidate", "recruiter", "admin"], // All roles can access jobs
-      };
-
-      // If path has specific role requirements
-      if (roleAccessMap[path]) {
-        if (!roleAccessMap[path].includes(userRole)) {
-          // User doesn't have access - redirect to their dashboard
-          alert(`Access denied. This section is for ${roleAccessMap[path].join('/')} only.`);
-          
-          // Redirect to user's appropriate dashboard
->>>>>>> upstream/main
-          switch (userRole) {
-            case "candidate":
-              navigate("/candidates");
-              break;
-            case "recruiter":
-              navigate("/recruiters");
-              break;
-            case "admin":
-              navigate("/collegeadmins");
-              break;
-            default:
-              navigate("/");
-          }
-          return;
-        }
-      }
-      
-<<<<<<< HEAD
-      navigate(path);
-    } else {
-=======
-      // User has access, navigate to path
-      navigate(path);
-    } else {
-      // Not logged in - navigate to login with intended path
->>>>>>> upstream/main
-      navigate("/login", { state: { intendedPath: path } });
-    }
-  };
-
-<<<<<<< HEAD
   const handleRoleBasedNavigation = (role) => {
     if (loggedIn) {
       if (userRole === role) {
-=======
-  const handleDirectNavigation = (path) => {
-    navigate(path);
-  };
-
-  const handleRoleBasedNavigation = (role) => {
-    if (loggedIn) {
-      // If already logged in, check if user is trying to access their own role
-      if (userRole === role) {
-        // Navigate to their dashboard
->>>>>>> upstream/main
         switch (role) {
           case "candidate":
             navigate("/candidates");
@@ -93,19 +21,14 @@ export default function Home() {
           case "admin":
             navigate("/collegeadmins");
             break;
+          default:
+            navigate("/");
+            break;
         }
       } else {
-<<<<<<< HEAD
         alert(`You are currently logged in as a ${userRole}. Please logout to access ${role} features.`);
       }
     } else {
-=======
-        // User is logged in but trying to access different role
-        alert(`You are currently logged in as a ${userRole}. Please logout to access ${role} features.`);
-      }
-    } else {
-      // Not logged in - go to login with selected role
->>>>>>> upstream/main
       navigate("/login", { state: { role } });
     }
   };
@@ -126,7 +49,6 @@ export default function Home() {
             <p>Connecting Candidates, Recruiters, and College Admins for Smarter Careers</p>
           </div>
           
-<<<<<<< HEAD
           {loggedIn && (
             <div className="profile-icon-wrapper">
               <ProfileIcon />
@@ -135,25 +57,6 @@ export default function Home() {
         </div>
       </header>
 
-=======
-          {/* Profile Icon in top right corner */}
-        
-      {loggedIn && (
-  <div className="profile-icon-wrapper">
-    <ProfileIcon />
-  </div>
-)}
-        </div>
-        
-        {/* Stars */}
-        <span className="star" style={{ left: "10%", top: "30px" }}></span>
-        <span className="star" style={{ left: "80%", top: "60px", background: "#43e97b" }}></span>
-        <span className="star" style={{ left: "50%", top: "20px", background: "#ffae00" }}></span>
-      </header>
-
-      {/* No navigation bar - completely removed */}
-
->>>>>>> upstream/main
       <main className="container">
         <div className="card-row">
           <div className="card">
@@ -224,10 +127,6 @@ export default function Home() {
           </div>
         </div>
 
-<<<<<<< HEAD
-=======
-        {/* Additional info for logged-in users */}
->>>>>>> upstream/main
         {loggedIn && (
           <div className="user-status-card" style={{
             marginTop: "2rem",
@@ -238,7 +137,7 @@ export default function Home() {
             textAlign: "center"
           }}>
             <p style={{ margin: 0, color: "#0369a1", fontWeight: "500" }}>
-              👋 Welcome back! You are logged in as a <strong>{userRole}</strong>.
+              ðŸ‘‹ Welcome back! You are logged in as a <strong>{userRole}</strong>.
               {userRole === "candidate" && " Explore job opportunities and enhance your career."}
               {userRole === "recruiter" && " Find the perfect candidates for your organization."}
               {userRole === "admin" && " Manage student placements and connect with recruiters."}
@@ -260,11 +159,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   localStorage.clear();
-<<<<<<< HEAD
                   navigate("/login");
-=======
-                  navigate("/");
->>>>>>> upstream/main
                   window.location.reload();
                 }}
                 style={{
@@ -282,10 +177,6 @@ export default function Home() {
           </div>
         )}
 
-<<<<<<< HEAD
-=======
-        {/* For non-logged in users, show login button */}
->>>>>>> upstream/main
         {!loggedIn && (
           <div className="login-prompt" style={{
             marginTop: "3rem",
@@ -321,11 +212,7 @@ export default function Home() {
         )}
       </main>
 
-<<<<<<< HEAD
-      <footer>&copy; 2025 Job Nexus – Built for careers, powered by you!</footer>
-=======
-      <footer>&copy; 2025 Job Nexus — Built for careers, powered by you!</footer>
->>>>>>> upstream/main
+      <footer>&copy; 2025 Job Nexus â€“ Built for careers, powered by you!</footer>
     </>
   );
 }

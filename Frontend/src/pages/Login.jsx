@@ -1,16 +1,7 @@
-<<<<<<< HEAD
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Login.css";
 
-=======
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import "./Login.css";
-
-//const API_BASE = "http://localhost/JobNexus-main/Backend-PHP/api";
-
->>>>>>> upstream/main
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +10,6 @@ export default function Login() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,13 +38,6 @@ export default function Login() {
 
   // Set role from navigation state if provided
   React.useEffect(() => {
-=======
-
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
->>>>>>> upstream/main
     if (location.state?.role) {
       setRole(location.state.role);
     }
@@ -64,7 +47,6 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-<<<<<<< HEAD
     try {
       const endpoint = isLogin ? "login" : "register";
       const url = `http://localhost/JobNexus/Backend-PHP/api/${endpoint}.php`;
@@ -82,42 +64,12 @@ export default function Login() {
       const data = await response.json();
 
       if (data.success) {
-=======
-    const endpoint = isLogin ? "login.php" : "register.php";
-    const url = `http://localhost/JobNexus-main/Backend-PHP/api/${endpoint}`;
-
-    const payload = isLogin
-      ? { email, password, role }
-      : { email, password, role, firstName, lastName };
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      // Handle HTTP-level errors clearly
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // LOGIN SUCCESS
-      if (isLogin && data.success) {
->>>>>>> upstream/main
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
         localStorage.setItem("userRole", data.user.role);
 
-<<<<<<< HEAD
         // Redirect based on role
-=======
->>>>>>> upstream/main
         switch (data.user.role) {
           case "candidate":
             navigate("/candidates");
@@ -131,32 +83,12 @@ export default function Login() {
           default:
             navigate("/");
         }
-<<<<<<< HEAD
       } else {
         alert(data.message || "Authentication failed");
       }
     } catch (error) {
       console.error("Login error:", error);
       alert("Unable to connect to server. Make sure XAMPP is running.");
-=======
-        return;
-      }
-
-      // REGISTER SUCCESS
-      if (!isLogin && data.success) {
-        alert("Registration successful! Please sign in.");
-        setIsLogin(true);
-        setPassword("");
-        return;
-      }
-
-      // BACKEND-REPORTED ERROR
-      alert(data.message || "Authentication failed");
-
-    } catch (error) {
-      console.error("Auth request failed:", error);
-      alert("Unable to reach server. Please try again.");
->>>>>>> upstream/main
     } finally {
       setLoading(false);
     }
@@ -165,11 +97,7 @@ export default function Login() {
   return (
     <div className="login-page-compact">
       <div className="back-home">
-<<<<<<< HEAD
-        <Link to="/home" className="back-link">← Back to Home</Link>
-=======
-        <Link to="/" className="back-link">← Back to Home</Link>
->>>>>>> upstream/main
+        <Link to="/home" className="back-link">â† Back to Home</Link>
       </div>
 
       <div className="login-container-compact">
@@ -178,7 +106,6 @@ export default function Login() {
             <span className="logo-gradient">Job</span>Nexus
           </h1>
           <p className="tagline-compact">
-<<<<<<< HEAD
             {isLogin ? "Welcome back! Sign in to continue" : "Join our community today"}
           </p>
         </div>
@@ -202,7 +129,7 @@ export default function Login() {
                 onClick={() => setRole("candidate")}
                 type="button"
               >
-                👤 Candidate
+                ðŸ‘¤ Candidate
               </button>
 
               <button
@@ -210,7 +137,7 @@ export default function Login() {
                 onClick={() => setRole("recruiter")}
                 type="button"
               >
-                💼 Recruiter
+                ðŸ’¼ Recruiter
               </button>
 
               <button
@@ -218,7 +145,7 @@ export default function Login() {
                 onClick={() => setRole("admin")}
                 type="button"
               >
-                🏛️ Admin
+                ðŸ›ï¸ Admin
               </button>
             </div>
 
@@ -308,82 +235,3 @@ export default function Login() {
     </div>
   );
 }
-=======
-            {isLogin
-              ? "Welcome back! Sign in to continue"
-              : "Join our community today"}
-          </p>
-        </div>
-
-        {/* ROLE TABS */}
-        <div className="role-tabs-compact">
-          {["candidate", "recruiter", "admin"].map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`role-tab-compact ${role === r ? "active" : ""}`}
-              onClick={() => setRole(r)}
-            >
-              {r.charAt(0).toUpperCase() + r.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* FORM */}
-        <form onSubmit={handleSubmit} className="form-compact">
-          {!isLogin && (
-            <>
-              <input
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-              />
-              <input
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-              />
-            </>
-          )}
-
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            minLength="6"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <button type="submit" disabled={loading}>
-            {loading
-              ? "Please wait..."
-              : isLogin
-              ? "Sign In"
-              : "Create Account"}
-          </button>
-
-          <p
-            className="toggle-form-btn"
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            {isLogin
-              ? "Need an account? Sign up"
-              : "Have an account? Sign in"}
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
->>>>>>> upstream/main

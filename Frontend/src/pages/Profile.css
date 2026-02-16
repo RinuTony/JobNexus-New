@@ -1,11 +1,7 @@
 /* Profile.css */
 .profile-page {
   min-height: 100vh;
-<<<<<<< HEAD
   background: #EFECE3;
-=======
-  background: #f8fafc;
->>>>>>> upstream/main
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
@@ -21,13 +17,8 @@
 .profile-loading .spinner {
   width: 40px;
   height: 40px;
-<<<<<<< HEAD
   border: 3px solid #8FABD4;
   border-top-color: #4A70A9;
-=======
-  border: 3px solid #e5e7eb;
-  border-top-color: #4f46e5;
->>>>>>> upstream/main
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -43,58 +34,35 @@
   align-items: center;
   padding: 1.5rem 2rem;
   background: white;
-<<<<<<< HEAD
   border-bottom: 1px solid #8FABD4;
-=======
-  border-bottom: 1px solid #e5e7eb;
->>>>>>> upstream/main
 }
 
 .profile-header h1 {
   margin: 0;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #1f2937;
->>>>>>> upstream/main
   font-size: 1.8rem;
   font-weight: 700;
 }
 
 .back-button {
   padding: 0.5rem 1rem;
-<<<<<<< HEAD
   background: #EFECE3;
   border: 1px solid #8FABD4;
   border-radius: 6px;
   color: #000000;
-=======
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  color: #374151;
->>>>>>> upstream/main
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .back-button:hover {
-<<<<<<< HEAD
   background: #8FABD4;
   color: white;
-=======
-  background: #e5e7eb;
->>>>>>> upstream/main
 }
 
 .save-button {
   padding: 0.75rem 1.5rem;
-<<<<<<< HEAD
   background: #4A70A9;
-=======
-  background: #4f46e5;
->>>>>>> upstream/main
   color: white;
   border: none;
   border-radius: 8px;
@@ -104,11 +72,7 @@
 }
 
 .save-button:hover:not(:disabled) {
-<<<<<<< HEAD
   background: #8FABD4;
-=======
-  background: #4338ca;
->>>>>>> upstream/main
   transform: translateY(-1px);
 }
 
@@ -138,11 +102,7 @@
   background: white;
   border-radius: 12px;
   padding: 2rem;
-<<<<<<< HEAD
   border: 1px solid #8FABD4;
-=======
-  border: 1px solid #e5e7eb;
->>>>>>> upstream/main
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -152,11 +112,7 @@
   border-radius: 50%;
   margin: 0 auto 1.5rem;
   overflow: hidden;
-<<<<<<< HEAD
   border: 4px solid #8FABD4;
-=======
-  border: 4px solid white;
->>>>>>> upstream/main
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -169,11 +125,7 @@
 .avatar-initials {
   width: 100%;
   height: 100%;
-<<<<<<< HEAD
   background: linear-gradient(45deg, #4A70A9, #8FABD4);
-=======
-  background: linear-gradient(45deg, #4f46e5, #8b5cf6);
->>>>>>> upstream/main
   display: flex;
   align-items: center;
   justify-content: center;
@@ -188,52 +140,32 @@
 
 .profile-info h2 {
   margin: 0 0 0.5rem;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #1f2937;
->>>>>>> upstream/main
   font-size: 1.3rem;
   font-weight: 600;
 }
 
 .profile-email {
   margin: 0 0 0.5rem;
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #6b7280;
->>>>>>> upstream/main
   font-size: 0.95rem;
 }
 
 .profile-role {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-<<<<<<< HEAD
   background: #EFECE3;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
   color: #4A70A9;
-=======
-  background: #f3f4f6;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #4f46e5;
->>>>>>> upstream/main
   margin: 0 0 1rem;
 }
 
 .resume-link {
   display: inline-block;
   padding: 0.5rem 1rem;
-<<<<<<< HEAD
   background: #4A70A9;
-=======
-  background: #10b981;
->>>>>>> upstream/main
   color: white;
   text-decoration: none;
   border-radius: 6px;
@@ -243,11 +175,7 @@
 }
 
 .resume-link:hover {
-<<<<<<< HEAD
   background: #8FABD4;
-=======
-  background: #059669;
->>>>>>> upstream/main
 }
 
 .profile-tabs {
@@ -257,11 +185,7 @@
   background: white;
   border-radius: 12px;
   padding: 1rem;
-<<<<<<< HEAD
   border: 1px solid #8FABD4;
-=======
-  border: 1px solid #e5e7eb;
->>>>>>> upstream/main
 }
 
 .profile-tab {
@@ -270,11 +194,7 @@
   border: none;
   border-radius: 8px;
   text-align: left;
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #6b7280;
->>>>>>> upstream/main
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -284,21 +204,12 @@
 }
 
 .profile-tab:hover {
-<<<<<<< HEAD
   background: #EFECE3;
   color: #000000;
 }
 
 .profile-tab.active {
   background: #4A70A9;
-=======
-  background: #f9fafb;
-  color: #374151;
-}
-
-.profile-tab.active {
-  background: #4f46e5;
->>>>>>> upstream/main
   color: white;
 }
 
@@ -307,31 +218,19 @@
   background: white;
   border-radius: 12px;
   padding: 2rem;
-<<<<<<< HEAD
   border: 1px solid #8FABD4;
-=======
-  border: 1px solid #e5e7eb;
->>>>>>> upstream/main
 }
 
 .profile-section h3 {
   margin: 0 0 0.5rem;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #1f2937;
->>>>>>> upstream/main
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .section-description {
   margin: 0 0 2rem;
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #6b7280;
->>>>>>> upstream/main
 }
 
 .form-grid {
@@ -351,11 +250,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #374151;
->>>>>>> upstream/main
   font-weight: 500;
   font-size: 0.9rem;
 }
@@ -363,11 +258,7 @@
 .form-group input {
   width: 100%;
   padding: 0.75rem 1rem;
-<<<<<<< HEAD
   border: 1.5px solid #8FABD4;
-=======
-  border: 1.5px solid #e5e7eb;
->>>>>>> upstream/main
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -376,7 +267,6 @@
 
 .form-group input:focus {
   outline: none;
-<<<<<<< HEAD
   border-color: #4A70A9;
   box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
 }
@@ -384,25 +274,12 @@
 .form-group input.disabled-input {
   background: #EFECE3;
   color: #4A70A9;
-=======
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.form-group input.disabled-input {
-  background: #f9fafb;
-  color: #6b7280;
->>>>>>> upstream/main
   cursor: not-allowed;
 }
 
 .input-note {
   margin: 0.25rem 0 0;
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #9ca3af;
->>>>>>> upstream/main
   font-size: 0.8rem;
 }
 
@@ -419,11 +296,7 @@
 
 .add-skill-btn {
   padding: 0.75rem 1.5rem;
-<<<<<<< HEAD
   background: #4A70A9;
-=======
-  background: #10b981;
->>>>>>> upstream/main
   color: white;
   border: none;
   border-radius: 8px;
@@ -433,11 +306,7 @@
 }
 
 .add-skill-btn:hover {
-<<<<<<< HEAD
   background: #8FABD4;
-=======
-  background: #059669;
->>>>>>> upstream/main
 }
 
 .skills-list {
@@ -451,27 +320,16 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-<<<<<<< HEAD
   background: #EFECE3;
   border-radius: 20px;
   font-size: 0.9rem;
   color: #000000;
-=======
-  background: #f3f4f6;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #374151;
->>>>>>> upstream/main
 }
 
 .remove-skill {
   background: none;
   border: none;
-<<<<<<< HEAD
   color: #8FABD4;
-=======
-  color: #9ca3af;
->>>>>>> upstream/main
   cursor: pointer;
   font-size: 1.2rem;
   padding: 0;
@@ -484,21 +342,12 @@
 }
 
 .remove-skill:hover {
-<<<<<<< HEAD
   background: #8FABD4;
   color: white;
 }
 
 .no-skills {
   color: #8FABD4;
-=======
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.no-skills {
-  color: #9ca3af;
->>>>>>> upstream/main
   font-style: italic;
   margin: 0.5rem 0;
 }
@@ -514,15 +363,9 @@
 .security-btn {
   padding: 1rem;
   background: white;
-<<<<<<< HEAD
   border: 1.5px solid #8FABD4;
   border-radius: 8px;
   color: #000000;
-=======
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  color: #374151;
->>>>>>> upstream/main
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -533,7 +376,6 @@
 }
 
 .security-btn:hover {
-<<<<<<< HEAD
   background: #EFECE3;
   border-color: #4A70A9;
 }
@@ -546,50 +388,24 @@
 .security-btn.danger:hover {
   background: #EFECE3;
   border-color: #4A70A9;
-=======
-  background: #f9fafb;
-  border-color: #d1d5db;
-}
-
-.security-btn.danger {
-  color: #dc2626;
-  border-color: #fecaca;
-}
-
-.security-btn.danger:hover {
-  background: #fef2f2;
-  border-color: #fca5a5;
->>>>>>> upstream/main
 }
 
 .security-info {
   padding: 1.5rem;
-<<<<<<< HEAD
   background: #EFECE3;
-=======
-  background: #f9fafb;
->>>>>>> upstream/main
   border-radius: 8px;
 }
 
 .security-info h4 {
   margin: 0 0 0.5rem;
-<<<<<<< HEAD
   color: #000000;
-=======
-  color: #1f2937;
->>>>>>> upstream/main
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 .security-info p {
   margin: 0 0 1rem;
-<<<<<<< HEAD
   color: #4A70A9;
-=======
-  color: #6b7280;
->>>>>>> upstream/main
 }
 
 /* Responsive */

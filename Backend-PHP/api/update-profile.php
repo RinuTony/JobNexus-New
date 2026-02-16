@@ -1,5 +1,4 @@
-<?php
-<<<<<<< HEAD
+﻿<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -10,13 +9,6 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-=======
-include 'config.php';
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Authorization, Content-Type");
->>>>>>> upstream/main
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
@@ -25,19 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 $userId = $input['userId'] ?? 0;
-<<<<<<< HEAD
 $userRole = $input['role'] ?? null;
-=======
->>>>>>> upstream/main
 
 if (!$userId) {
     echo json_encode(['success' => false, 'message' => 'User ID required']);
     exit();
 }
-<<<<<<< HEAD
 
 try {
-    // ✅ Use Database class instead of creating own PDO
+    // âœ… Use Database class instead of creating own PDO
     $database = new Database();
     $db = $database->getConnection();
     
@@ -53,20 +41,6 @@ try {
     
     // Update common profile
     $stmt = $db->prepare("
-=======
-/*
-$host = '127.0.0.1';
-$dbname = 'job_nexus';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    */
-    // Update profile
-    $stmt = $pdo->prepare("
->>>>>>> upstream/main
         INSERT INTO profiles (user_id, first_name, last_name, phone) 
         VALUES (:user_id, :first_name, :last_name, :phone)
         ON DUPLICATE KEY UPDATE 
@@ -82,7 +56,6 @@ try {
         ':phone' => $input['phone'] ?? ''
     ]);
     
-<<<<<<< HEAD
     switch ($userRole) {
         case 'candidate':
             $skillsInput = $input['skills'] ?? [];
@@ -201,14 +174,3 @@ try {
     ]);
 }
 ?>
-=======
-    // Update role-specific profile
-    // (Add similar logic for candidate_profiles, recruiter_profiles, admin_profiles)
-    
-    echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
-    
-/* catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Update failed: ' . $e->getMessage()]);
-}*/
-?>
->>>>>>> upstream/main

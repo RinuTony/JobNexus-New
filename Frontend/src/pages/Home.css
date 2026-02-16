@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ================= COLOR VARIABLES ================= */
 
 :root {
@@ -30,20 +29,6 @@ header {
   background-color: var(--clr-deep) !important;
   box-shadow: none;
 }
-=======
-/* Home.css updates */
-
-/* Header adjustments */
-header {
-  text-align: center;
-  padding: 2rem 2rem 3rem;
-  background: black;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
->>>>>>> upstream/main
 header > div {
   display: flex;
   justify-content: space-between;
@@ -51,26 +36,15 @@ header > div {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-<<<<<<< HEAD
 }
 
 header > div > div {
   flex: 1;
   text-align: left;
-=======
-  position: relative;
-}
-
-/* Adjust header text alignment */
-header > div > div {
-  text-align: left;
-  flex: 1;
->>>>>>> upstream/main
 }
 
 header h1 {
   font-size: 3rem;
-<<<<<<< HEAD
   font-weight: 900;
   margin-bottom: 0.8rem;
   color: var(--clr-light);
@@ -220,43 +194,6 @@ footer {
 @media (max-width: 768px) {
   header {
     padding: 2rem 1rem 3rem;
-=======
-  font-weight: 800;
-  margin-bottom: 1rem;
-  letter-spacing: -1px;
-  color: #bae6fd;
-}
-
-header p {
-  font-size: 1.2rem;
-  color: #cbd5e1;
-  max-width: 600px;
-  margin: 0;
-}
-
-/* Profile icon positioning */
-.profile-icon-top-right {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-/* Remove old nav styles */
-nav {
-  display: none; /* Hide the navigation bar completely */
-}
-
-/* Adjust container spacing since nav is removed */
-.container {
-  margin: 2rem auto;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  header {
-    padding: 1.5rem 1rem 2.5rem;
->>>>>>> upstream/main
   }
   
   header > div {
@@ -265,7 +202,6 @@ nav {
     padding: 0 1rem;
   }
   
-<<<<<<< HEAD
   header h1 {
     font-size: 2.4rem;
   }
@@ -277,40 +213,11 @@ nav {
   .card {
     width: 85%;
     padding: 1.9rem;
-=======
-  header > div > div {
-    text-align: center;
-  }
-  
-  header h1 {
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  header p {
-    font-size: 1rem;
-  }
-  
-  .profile-icon-top-right {
-    position: static;
-    margin-top: 1rem;
-    order: -1;
-    align-self: flex-end;
-  }
-  
-  .card-row {
-    gap: 1.5rem;
-  }
-  
-  .card {
-    padding: 1.5rem;
->>>>>>> upstream/main
   }
 }
 
 @media (max-width: 480px) {
   header h1 {
-<<<<<<< HEAD
     font-size: 2rem;
   }
 
@@ -318,12 +225,3 @@ nav {
     padding: 1.6rem;
   }
 }
-=======
-    font-size: 1.8rem;
-  }
-  
-  .card {
-    padding: 1.25rem;
-  }
-}
->>>>>>> upstream/main
