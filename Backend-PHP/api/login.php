@@ -1,11 +1,8 @@
-﻿<?php
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
 // Handle preflight
@@ -61,7 +58,7 @@ try {
         exit();
     }
 
-    // âš ï¸ TEMP password check (hash later)
+    // Ã¢Å¡Â Ã¯Â¸Â TEMP password check (hash later)
     if ($password !== $user['password']) {
         echo json_encode([
             'success' => false,
@@ -104,7 +101,7 @@ try {
             'role' => $user['role'],
             'profile' => array_merge($commonProfile, $roleProfile)
         ],
-        // âš ï¸ Replace with JWT later
+        // Ã¢Å¡Â Ã¯Â¸Â Replace with JWT later
         'token' => base64_encode(json_encode([
             'userId' => $user['id'],
             'email' => $user['email'],

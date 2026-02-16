@@ -5,6 +5,7 @@ import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
 export default function Candidates() {
+  const DESCRIPTION_PREVIEW_LENGTH = 240;
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function Candidates() {
   const [notificationsError, setNotificationsError] = useState("");
   const [selectedJobFilter, setSelectedJobFilter] = useState("all");
   const [tailorLoading, setTailorLoading] = useState({});
+  const [expandedJobDescriptions, setExpandedJobDescriptions] = useState({});
   
   const [selectedResumeByJob, setSelectedResumeByJob] = useState({});
   const [showTailorTextModal, setShowTailorTextModal] = useState(false);
@@ -81,6 +83,13 @@ export default function Candidates() {
     setSelectedResumeByJob((prev) => ({
       ...prev,
       [jobId]: value
+    }));
+  };
+
+  const toggleJobDescription = (jobId) => {
+    setExpandedJobDescriptions((prev) => ({
+      ...prev,
+      [jobId]: !prev[jobId]
     }));
   };
 
@@ -1129,14 +1138,47 @@ export default function Candidates() {
                           )}
                         </div>
                         
-                        <p style={{ 
-                          color: "#4b5563", 
-                          marginBottom: "16px", 
-                          lineHeight: "1.5",
-                          fontSize: "14px"
-                        }}>
-                          {job.description.length > 120 ? `${job.description.substring(0, 120)}...` : job.description}
-                        </p>
+                        {(() => {
+                          const fullDescription = (job.description || "").trim();
+                          const isExpanded = !!expandedJobDescriptions[job.id];
+                          const shouldTruncate = fullDescription.length > DESCRIPTION_PREVIEW_LENGTH;
+                          const visibleDescription = !fullDescription
+                            ? "No description provided."
+                            : shouldTruncate && !isExpanded
+                              ? `${fullDescription.substring(0, DESCRIPTION_PREVIEW_LENGTH)}...`
+                              : fullDescription;
+
+                          return (
+                            <div style={{ marginBottom: "16px" }}>
+                              <p style={{ 
+                                color: "#4b5563", 
+                                marginBottom: shouldTruncate ? "8px" : "0", 
+                                lineHeight: "1.5",
+                                fontSize: "14px",
+                                whiteSpace: "pre-wrap"
+                              }}>
+                                {visibleDescription}
+                              </p>
+                              {shouldTruncate && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleJobDescription(job.id)}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    padding: 0,
+                                    color: "#2563eb",
+                                    fontSize: "13px",
+                                    fontWeight: "600",
+                                    cursor: "pointer"
+                                  }}
+                                >
+                                  {isExpanded ? "Show less" : "Show more"}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                           {/* Resume Picker */}
                           <div style={{ marginBottom: "12px" }}>

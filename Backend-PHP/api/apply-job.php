@@ -4,7 +4,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -18,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // ✅ CREATE DB CONNECTION (THIS WAS MISSING)
+    // âœ… CREATE DB CONNECTION (THIS WAS MISSING)
     $database = new Database();
     $db = $database->getConnection();
 

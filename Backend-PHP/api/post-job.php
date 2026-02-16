@@ -1,10 +1,7 @@
-﻿<?php
+<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -34,7 +31,7 @@ $description = trim($input['description']);
 $recruiterId = (int)$input['recruiter_id'];
 
 try {
-    // âœ… Use Database class instead of direct PDO connection
+    // Ã¢Å“â€¦ Use Database class instead of direct PDO connection
     $database = new Database();
     $db = $database->getConnection();
 

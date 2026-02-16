@@ -1,5 +1,5 @@
-# .htaccess file for CORS
-Header set Access-Control-Allow-Origin "http://localhost:3000"
-Header set Access-Control-Allow-Methods "POST, GET, OPTIONS"
-Header set Access-Control-Allow-Headers "Content-Type"
-Header set Access-Control-Allow-Credentials "true"
+# CORS headers for API endpoints
+# Keep this permissive for local development across ports (3000/5173/etc).
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"

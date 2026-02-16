@@ -1,13 +1,10 @@
-﻿<?php
+<?php
 // Enable ALL error reporting at the VERY TOP
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
-// Headers for CORS
-header("Access-Control-Allow-Origin: *");  // Changed from specific origin to wildcard
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+// Response type
 header("Content-Type: application/json");
 
 // Handle preflight requests
@@ -43,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // âœ… Use Database class instead of creating own PDO
+        // Ã¢Å“â€¦ Use Database class instead of creating own PDO
         require_once __DIR__ . '/../config/database.php';
         $database = new Database();
         $db = $database->getConnection();
@@ -64,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare("INSERT INTO users (email, password, role) VALUES (:email, :password, :role)");
         $stmt->execute([
             ':email' => $email,
-            ':password' => $password, // âš ï¸ TODO: Hash password in production
+            ':password' => $password, // Ã¢Å¡Â Ã¯Â¸Â TODO: Hash password in production
             ':role' => $role
         ]);
         

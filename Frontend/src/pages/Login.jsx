@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Login.css";
 
+const API_BASE = process.env.REACT_APP_PHP_API_BASE || "http://localhost/JobNexus/Backend-PHP/api";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +51,7 @@ export default function Login() {
 
     try {
       const endpoint = isLogin ? "login" : "register";
-      const url = `http://localhost/JobNexus/Backend-PHP/api/${endpoint}.php`;
+      const url = `${API_BASE}/${endpoint}.php`;
 
       const payload = isLogin
         ? { email, password, role }
@@ -61,7 +63,14 @@ export default function Login() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      const sanitized = raw.replace(/^\uFEFF/, "");
+      let data;
+      try {
+        data = JSON.parse(sanitized);
+      } catch {
+        throw new Error(sanitized || "Invalid response from server");
+      }
 
       if (data.success) {
         localStorage.setItem("loggedIn", "true");
@@ -88,7 +97,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Unable to connect to server. Make sure XAMPP is running.");
+      alert(error.message || "Unable to connect to server. Make sure XAMPP is running.");
     } finally {
       setLoading(false);
     }

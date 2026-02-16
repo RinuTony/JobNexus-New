@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
+
+const API_BASE = "http://localhost/JobNexus/Backend-PHP/api";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -39,38 +41,29 @@ export default function Profile() {
     confirmNewPassword: ""
   });
 
-  useEffect(() => {
-    // Check if user is logged in
-    const loggedIn = localStorage.getItem("loggedIn");
-    if (!loggedIn) {
-      navigate("/login");
+  const resolveUserId = useCallback((candidateUser) => {
+    const rawId =
+      candidateUser?.id ??
+      candidateUser?.userId ??
+      candidateUser?.user_id;
+    const numericId = Number(rawId);
+    return Number.isFinite(numericId) && numericId > 0 ? numericId : null;
+  }, []);
+
+  const resolveUserRole = useCallback((candidateUser) => {
+    return candidateUser?.role || null;
+  }, []);
+
+  const loadProfileData = useCallback(async (userData) => {
+    const resolvedUserId = resolveUserId(userData);
+    if (!resolvedUserId) {
+      console.error("Missing user id while loading profile", userData);
       return;
     }
 
-    // Load user data
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      setFormData(prev => ({
-        ...prev,
-        email: parsedUser.email,
-        firstName: parsedUser.profile?.firstName || "",
-        lastName: parsedUser.profile?.lastName || "",
-        phone: parsedUser.profile?.phone || ""
-      }));
-      
-      // Load additional profile data based on role
-      loadProfileData(parsedUser);
-    }
-    
-    setLoading(false);
-  }, [navigate]);
-
-  const loadProfileData = async (userData) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost/api/get-profile.php?userId=${userData.id}`, {
+      const response = await fetch(`${API_BASE}/get-profile.php?userId=${resolvedUserId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -120,7 +113,35 @@ export default function Profile() {
     } catch (error) {
       console.error("Error loading profile:", error);
     }
-  };
+  }, [resolveUserId]);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const loggedIn = localStorage.getItem("loggedIn");
+    if (!loggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    // Load user data
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      setFormData(prev => ({
+        ...prev,
+        email: parsedUser.email,
+        firstName: parsedUser.profile?.firstName || "",
+        lastName: parsedUser.profile?.lastName || "",
+        phone: parsedUser.profile?.phone || ""
+      }));
+      
+      // Load additional profile data based on role
+      loadProfileData(parsedUser);
+    }
+    
+    setLoading(false);
+  }, [navigate, loadProfileData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -149,6 +170,16 @@ export default function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const storedUserRaw = localStorage.getItem("user");
+    const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+    const resolvedUserId = resolveUserId(user) || resolveUserId(storedUser);
+    const resolvedRole = resolveUserRole(user) || resolveUserRole(storedUser);
+
+    if (!resolvedUserId) {
+      alert("Unable to update profile: missing user ID. Please log out and log in again.");
+      return;
+    }
+
     const hasSecurityInput =
       formData.currentPassword?.trim() ||
       formData.newPassword?.trim() ||
@@ -169,22 +200,28 @@ export default function Profile() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost/api/update-profile.php", {
+      const response = await fetch(`${API_BASE}/update-profile.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          userId: user.id,
-          role: user.role,
+          userId: resolvedUserId,
+          role: resolvedRole,
           ...formData,
           currentPassword: hasSecurityInput ? formData.currentPassword : "",
           newPassword: hasSecurityInput ? formData.newPassword : ""
         })
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(raw || "Invalid server response");
+      }
       
       if (data.success) {
         // Update user in localStorage
@@ -212,7 +249,7 @@ export default function Profile() {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Error updating profile. Please try again.");
+      alert(error.message || "Error updating profile. Please try again.");
     } finally {
       setSaving(false);
     }
