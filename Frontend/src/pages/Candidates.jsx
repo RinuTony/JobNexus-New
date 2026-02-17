@@ -343,6 +343,10 @@ export default function Candidates() {
       alert("Please login as candidate");
       return;
     }
+    if (Number(job.accepting_applications ?? 1) !== 1) {
+      alert("This job is no longer accepting applications.");
+      return;
+    }
     if (appliedJobs.some(app => app.job_id === job.id)) {
       alert("You have already applied for this job");
       return;
@@ -687,6 +691,13 @@ export default function Candidates() {
       default:
         return "applied";
     }
+  };
+
+  const humanizeNotificationStatus = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    if (normalized === "interview_scheduled") return "scheduled for interview";
+    if (!normalized) return "updated";
+    return normalized.replace(/_/g, " ");
   };
 
   const statusMeta = {
@@ -1145,6 +1156,11 @@ export default function Candidates() {
                       const currentStatus = appliedJobStatus[String(job.id)] || "unapplied";
                       const currentStatusMeta = statusMeta[currentStatus] || statusMeta.applied;
                       const hasAppliedToJob = currentStatus !== "unapplied";
+                      const isAcceptingApplications = Number(job.accepting_applications ?? 1) === 1;
+                      const displayStatusMeta =
+                        !isAcceptingApplications && !hasAppliedToJob
+                          ? { label: "Closed", symbol: "[X]", bg: "#fee2e2", color: "#991b1b" }
+                          : currentStatusMeta;
                       const jobMatchScore = matchScores[job.id];
                       const selection = getSelectedResumeForJob(job.id);
                       return (
@@ -1168,8 +1184,8 @@ export default function Candidates() {
                             </p>
                           </div>
                           <div style={{ 
-                            backgroundColor: currentStatusMeta.bg, 
-                            color: currentStatusMeta.color, 
+                            backgroundColor: displayStatusMeta.bg, 
+                            color: displayStatusMeta.color, 
                             padding: "4px 10px", 
                             borderRadius: "12px", 
                             fontSize: "12px", 
@@ -1177,7 +1193,7 @@ export default function Candidates() {
                             whiteSpace: "nowrap",
                             border: "1px solid rgba(0,0,0,0.06)"
                           }}>
-                            {currentStatusMeta.symbol} {currentStatusMeta.label}
+                            {displayStatusMeta.symbol} {displayStatusMeta.label}
                           </div>
                         </div>
                         
@@ -1396,20 +1412,24 @@ export default function Candidates() {
                         {/* Apply Button */}
                         <button
                           onClick={() => openUploadModal(job)}
-                          disabled={hasAppliedToJob}
+                          disabled={hasAppliedToJob || !isAcceptingApplications}
                           style={{
                             width: "100%",
                             padding: "10px",
-                            backgroundColor: hasAppliedToJob ? "#d1d5db" : "#4A70A9",
-                            color: hasAppliedToJob ? "#6b7280" : "#fff",
+                            backgroundColor: hasAppliedToJob || !isAcceptingApplications ? "#d1d5db" : "#4A70A9",
+                            color: hasAppliedToJob || !isAcceptingApplications ? "#6b7280" : "#fff",
                             border: "none",
                             borderRadius: "6px",
-                            cursor: hasAppliedToJob ? "not-allowed" : "pointer",
+                            cursor: hasAppliedToJob || !isAcceptingApplications ? "not-allowed" : "pointer",
                             fontWeight: "600",
                             fontSize: "14px"
                           }}
                         >
-                          {hasAppliedToJob ? `${currentStatusMeta.symbol} ${currentStatusMeta.label}` : "Apply Now"}
+                          {hasAppliedToJob
+                            ? `${currentStatusMeta.symbol} ${currentStatusMeta.label}`
+                            : !isAcceptingApplications
+                              ? "Applications Closed"
+                              : "Apply Now"}
                         </button>
                       </div>
                     );
@@ -1482,7 +1502,7 @@ export default function Candidates() {
                     }}
                   >
                     <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 500 }}>
-                      {n.message || `Your application status was updated to ${n.status}.`}
+                      {n.message || `Your application status was ${humanizeNotificationStatus(n.status)}.`}
                     </div>
                     <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
                       {formatNotificationTime(n.created_at)}

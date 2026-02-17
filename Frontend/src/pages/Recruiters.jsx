@@ -1,8 +1,41 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
+const STATUS_OPTIONS = [
+  { value: "applied", label: "Applied" },
+  { value: "reviewed", label: "Reviewed" },
+  { value: "interview_scheduled", label: "Interview Scheduled" },
+  { value: "interviewed", label: "Interviewed" },
+  { value: "pending", label: "Pending" },
+  { value: "accepted", label: "Accepted" },
+  { value: "rejected", label: "Rejected" }
+];
+
+const normalizeStatus = (rawStatus) => {
+  const status = String(rawStatus || "pending").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  switch (status) {
+    case "applied":
+    case "reviewed":
+    case "interview_scheduled":
+    case "interviewed":
+    case "pending":
+    case "accepted":
+    case "rejected":
+      return status;
+    case "shortlisted":
+      return "reviewed";
+    default:
+      return "pending";
+  }
+};
+
+const statusLabel = (status) =>
+  STATUS_OPTIONS.find((s) => s.value === normalizeStatus(status))?.label || "Pending";
+
 export default function Recruiters() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,63 +58,75 @@ export default function Recruiters() {
   const [notificationsError, setNotificationsError] = useState("");
 
   const API_BASE = "http://localhost/JobNexus/Backend-PHP/api";
+  const user = useMemo(() => JSON.parse(localStorage.getItem("user")), []);
+
+  const fetchRecruiterJobs = async (recruiterId) => {
+    try {
+      const res = await fetch(`${API_BASE}/recruiter-jobs.php?recruiter_id=${recruiterId}`);
+      const data = await res.json();
+      if (data.success) {
+        setRecruiterJobs(data.jobs || []);
+      }
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+    }
+  };
+
+  const fetchApplicants = async (recruiterId) => {
+    setApplicationsLoading(true);
+    setApplicationsError("");
+    try {
+      const res = await fetch(`${API_BASE}/get-applicants.php?recruiter_id=${recruiterId}`);
+      const data = await res.json();
+      if (data.success) {
+        setApplications(data.applications || []);
+        const initialStatuses = {};
+        data.applications?.forEach((app) => {
+          initialStatuses[app.application_id] = normalizeStatus(app.status);
+        });
+        setStatusUpdates(initialStatuses);
+      } else {
+        setApplicationsError(data.message || "Failed to load applications");
+      }
+    } catch {
+      setApplicationsError("Error loading applications");
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const fetchRecruiterNotifications = async (recruiterId) => {
+    setNotificationsLoading(true);
+    setNotificationsError("");
+    try {
+      const res = await fetch(`${API_BASE}/get-notifications.php?user_id=${recruiterId}&limit=50`);
+      const data = await res.json();
+      if (data.success) {
+        setNotifications(data.notifications || []);
+      } else {
+        setNotificationsError(data.message || "Failed to load notifications");
+      }
+    } catch {
+      setNotificationsError("Failed to load notifications");
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
 
   // Fetch applicants and recruiter's jobs
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
     if (!user || user.role !== "recruiter") {
       alert("Please login as recruiter");
       return;
     }
-
-    setApplicationsLoading(true);
-    setApplicationsError("");
-    fetch(`${API_BASE}/get-applicants.php?recruiter_id=${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setApplications(data.applications || []);
-          const initialStatuses = {};
-          data.applications?.forEach((app) => {
-            initialStatuses[app.application_id] = app.status;
-          });
-          setStatusUpdates(initialStatuses);
-        } else {
-          setApplicationsError(data.message || "Failed to load applications");
-        }
-      })
-      .catch(() => setApplicationsError("Error loading applications"))
-      .finally(() => setApplicationsLoading(false));
-
-    fetch(`${API_BASE}/recruiter-jobs.php?recruiter_id=${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setRecruiterJobs(data.jobs || []);
-        }
-      })
-      .catch((err) => console.error("Error fetching jobs:", err));
-
-    setNotificationsLoading(true);
-    setNotificationsError("");
-    fetch(`${API_BASE}/get-notifications.php?user_id=${user.id}&limit=50`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setNotifications(data.notifications || []);
-        } else {
-          setNotificationsError(data.message || "Failed to load notifications");
-        }
-      })
-      .catch(() => setNotificationsError("Failed to load notifications"))
-      .finally(() => setNotificationsLoading(false));
-  }, []);
+    fetchApplicants(user.id);
+    fetchRecruiterJobs(user.id);
+    fetchRecruiterNotifications(user.id);
+  }, [user]);
 
   // Post job
   const handlePostJob = async (e) => {
     e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
-
     if (!user || user.role !== "recruiter") {
       alert("Please login as recruiter");
       return;
@@ -106,13 +151,7 @@ export default function Recruiters() {
         alert("Job posted successfully");
         setTitle("");
         setDescription("");
-        fetch(`${API_BASE}/recruiter-jobs.php?recruiter_id=${user.id}`)
-          .then((res) => res.json())
-          .then((jobsData) => {
-            if (jobsData.success) {
-              setRecruiterJobs(jobsData.jobs || []);
-            }
-          });
+        await fetchRecruiterJobs(user.id);
       } else {
         alert(data.message || "Failed to post job");
       }
@@ -147,7 +186,6 @@ export default function Recruiters() {
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem("user"));
     const url = `${API_BASE}/download-resume.php?application_id=${application.application_id}&recruiter_id=${user.id}`;
     window.open(url, "_blank");
   };
@@ -160,11 +198,9 @@ export default function Recruiters() {
 
   // Update application status
   const handleStatusChange = async (applicationId, newStatus) => {
-    const user = JSON.parse(localStorage.getItem("user"));
-
     setStatusUpdates((prev) => ({
       ...prev,
-      [applicationId]: newStatus,
+      [applicationId]: normalizeStatus(newStatus),
     }));
 
     try {
@@ -173,7 +209,7 @@ export default function Recruiters() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           application_id: applicationId,
-          status: newStatus,
+          status: normalizeStatus(newStatus),
           recruiter_id: user.id,
         }),
       });
@@ -183,8 +219,9 @@ export default function Recruiters() {
         alert("Failed to update status");
         setStatusUpdates((prev) => ({
           ...prev,
-          [applicationId]:
-            applications.find((app) => app.application_id === applicationId)?.status,
+          [applicationId]: normalizeStatus(
+            applications.find((app) => app.application_id === applicationId)?.status
+          ),
         }));
       }
     } catch (error) {
@@ -240,13 +277,19 @@ export default function Recruiters() {
 
   // Get status badge class
   const getStatusClass = (status) => {
-    switch (status) {
+    switch (normalizeStatus(status)) {
+      case "applied":
+        return "status-applied";
       case "pending":
         return "status-pending";
       case "reviewed":
         return "status-reviewed";
-      case "shortlisted":
-        return "status-shortlisted";
+      case "interview_scheduled":
+        return "status-interview-scheduled";
+      case "interviewed":
+        return "status-interviewed";
+      case "accepted":
+        return "status-accepted";
       case "rejected":
         return "status-rejected";
       default:
@@ -276,7 +319,6 @@ export default function Recruiters() {
 
   // Download resume from rankings
   const downloadRankedResume = (filename) => {
-    const user = JSON.parse(localStorage.getItem("user"));
     if (!filename) {
       alert("No resume available for download");
       return;
@@ -288,7 +330,6 @@ export default function Recruiters() {
   };
 
   const markNotificationRead = async (notificationId) => {
-    const user = JSON.parse(localStorage.getItem("user"));
     if (!user?.id) return;
     try {
       await fetch(`${API_BASE}/mark-notification-read.php`, {
@@ -307,6 +348,36 @@ export default function Recruiters() {
     }
   };
 
+  const humanizeNotificationStatus = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    if (!normalized) return "updated";
+    if (normalized === "interview_scheduled") return "scheduled for interview";
+    return normalized.replace(/_/g, " ");
+  };
+
+  const openCandidateContact = (application) => {
+    const email = application?.candidate_email || "";
+    if (!email) {
+      alert("Candidate email not available.");
+      return;
+    }
+
+    const subject = encodeURIComponent(
+      `Regarding your application: ${application.job_title || "Job Application"}`
+    );
+    const body = encodeURIComponent(
+      `Hi ${application.candidate_name || "Candidate"},\n\nI am reaching out regarding your application.`
+    );
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      email
+    )}&su=${subject}&body=${body}`;
+
+    const popup = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    if (!popup) {
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const filteredApplications = useMemo(() => {
@@ -317,15 +388,13 @@ export default function Recruiters() {
   }, [applications, selectedJobForRanking]);
 
   const groupedApplications = useMemo(() => {
-    const groups = {
-      pending: [],
-      reviewed: [],
-      shortlisted: [],
-      rejected: [],
-    };
+    const groups = {};
+    STATUS_OPTIONS.forEach((opt) => {
+      groups[opt.value] = [];
+    });
 
     filteredApplications.forEach((app) => {
-      const status = app.status || "pending";
+      const status = normalizeStatus(app.status);
       if (!groups[status]) {
         groups[status] = [];
       }
@@ -337,7 +406,9 @@ export default function Recruiters() {
 
   const filteredByStatus = useMemo(() => {
     if (selectedStatusFilter === "all") return filteredApplications;
-    return filteredApplications.filter((app) => (app.status || "pending") === selectedStatusFilter);
+    return filteredApplications.filter(
+      (app) => normalizeStatus(app.status) === selectedStatusFilter
+    );
   }, [filteredApplications, selectedStatusFilter]);
 
   return (
@@ -412,6 +483,13 @@ export default function Recruiters() {
                 >
                   Clear Form
                 </button>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={() => navigate("/recruiter-jobs")}
+                >
+                  View Posted Jobs
+                </button>
               </div>
             </form>
           </section>
@@ -440,7 +518,7 @@ export default function Recruiters() {
                       <option value="">All jobs</option>
                       {recruiterJobs.map((job) => (
                         <option key={job.id} value={job.id}>
-                          {job.title} - {new Date(job.created_at).toLocaleDateString()}
+                          {job.title} ({job.company_name || "Company"}) - {new Date(job.created_at).toLocaleDateString()}
                         </option>
                       ))}
                     </select>
@@ -455,12 +533,11 @@ export default function Recruiters() {
                     className="status-filter-select"
                   >
                     <option value="all">All</option>
-                    <option value="shortlisted">
-                      Shortlisted ({groupedApplications.shortlisted.length})
-                    </option>
-                    <option value="reviewed">Reviewed ({groupedApplications.reviewed.length})</option>
-                    <option value="pending">Pending ({groupedApplications.pending.length})</option>
-                    <option value="rejected">Rejected ({groupedApplications.rejected.length})</option>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label} ({groupedApplications[opt.value]?.length || 0})
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -493,7 +570,7 @@ export default function Recruiters() {
                   onClick={() => setRankingOpen((prev) => !prev)}
                 >
                   <span>Ranking</span>
-                  <span className="accordion-icon">{rankingOpen ? "âˆ’" : "+"}</span>
+                  <span className="accordion-icon">{rankingOpen ? "-" : "+"}</span>
                 </button>
 
                 {rankingOpen && (
@@ -639,7 +716,7 @@ export default function Recruiters() {
                               {app.candidate_name || app.candidate_email || "Unknown Candidate"}
                             </div>
                             <span className={`application-status ${getStatusClass(app.status)}`}>
-                              {app.status?.charAt(0).toUpperCase() + app.status?.slice(1) || "Pending"}
+                              {statusLabel(app.status)}
                             </span>
                           </div>
                           <div className="application-date">{formatDate(app.applied_at)}</div>
@@ -651,6 +728,9 @@ export default function Recruiters() {
                           </div>
                           <div>
                             <strong>Job:</strong> {app.job_title || "N/A"}
+                          </div>
+                          <div>
+                            <strong>Company:</strong> {app.company_name || "N/A"}
                           </div>
                         </div>
 
@@ -696,15 +776,39 @@ export default function Recruiters() {
                             <strong>Update Status:</strong>
                           </label>
                           <select
-                            value={statusUpdates[app.application_id] || app.status || "pending"}
+                            value={normalizeStatus(statusUpdates[app.application_id] || app.status || "pending")}
                             onChange={(e) => handleStatusChange(app.application_id, e.target.value)}
                             className="status-selector"
                           >
-                            <option value="pending">Pending</option>
-                            <option value="reviewed">Reviewed</option>
-                            <option value="shortlisted">Shortlisted</option>
-                            <option value="rejected">Rejected</option>
+                            {STATUS_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
                           </select>
+                        </div>
+                        <div className="contact-row">
+                          <button
+                            type="button"
+                            className="btn secondary"
+                            onClick={() => openCandidateContact(app)}
+                          >
+                            Contact Candidate
+                          </button>
+                          <button
+                            type="button"
+                            className="btn outline"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(app.candidate_email || "");
+                                alert("Candidate email copied.");
+                              } catch {
+                                alert("Could not copy email.");
+                              }
+                            }}
+                          >
+                            Copy Email
+                          </button>
                         </div>
                       </div>
                     ))
@@ -745,7 +849,7 @@ export default function Recruiters() {
                       className={`notification-item ${n.is_read ? "" : "unread"}`}
                     >
                       <div className="notification-message">
-                        {n.message || `New application status: ${n.status}`}
+                        {n.message || `New application status: ${humanizeNotificationStatus(n.status)}`}
                       </div>
                       <div className="notification-meta">
                         {formatDate(n.created_at)}
@@ -824,9 +928,10 @@ export default function Recruiters() {
       <footer className="dashboard-footer">
         <p>&copy; 2025 Job Nexus - Recruiter Dashboard</p>
         <p style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-          {applications.length} total applications • Last updated: {new Date().toLocaleDateString()}
+          {applications.length} total applications | Last updated: {new Date().toLocaleDateString()}
         </p>
       </footer>
     </>
   );
 }
+

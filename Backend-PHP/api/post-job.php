@@ -9,7 +9,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/../config/database.php';  // Updated path to go up one level
+require_once __DIR__ . '/../config/database.php';
+
+function ensureAcceptingApplicationsColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE jobs ADD COLUMN accepting_applications TINYINT(1) NOT NULL DEFAULT 1");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
 
 $input = json_decode(file_get_contents("php://input"), true);
 
@@ -31,13 +42,13 @@ $description = trim($input['description']);
 $recruiterId = (int)$input['recruiter_id'];
 
 try {
-    // Ã¢Å“â€¦ Use Database class instead of direct PDO connection
     $database = new Database();
     $db = $database->getConnection();
+    ensureAcceptingApplicationsColumn($db);
 
     $stmt = $db->prepare("
-        INSERT INTO jobs (title, description, recruiter_id, created_at)
-        VALUES (:title, :description, :recruiter_id, NOW())
+        INSERT INTO jobs (title, description, recruiter_id, accepting_applications, created_at)
+        VALUES (:title, :description, :recruiter_id, 1, NOW())
     ");
 
     $stmt->execute([
@@ -59,3 +70,4 @@ try {
         "error" => $e->getMessage()
     ]);
 }
+?>

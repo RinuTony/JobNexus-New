@@ -29,9 +29,20 @@ if (!$application_id || !$status || !$recruiter_id) {
     exit();
 }
 
-// Validate status
-$allowed_statuses = ['pending', 'reviewed', 'shortlisted', 'rejected'];
-if (!in_array($status, $allowed_statuses)) {
+// Validate status (aligned with candidate-facing workflow)
+$normalizedStatus = strtolower(trim($status));
+$normalizedStatus = str_replace([' ', '-'], '_', $normalizedStatus);
+$statusMap = [
+    'applied' => 'applied',
+    'pending' => 'pending',
+    'reviewed' => 'reviewed',
+    'shortlisted' => 'reviewed',
+    'interview_scheduled' => 'interview_scheduled',
+    'interviewed' => 'interviewed',
+    'accepted' => 'accepted',
+    'rejected' => 'rejected'
+];
+if (!isset($statusMap[$normalizedStatus])) {
     http_response_code(400);
     echo json_encode([
         "success" => false,
@@ -39,6 +50,7 @@ if (!in_array($status, $allowed_statuses)) {
     ]);
     exit();
 }
+$status = $statusMap[$normalizedStatus];
 
 try {
     $database = new Database();
@@ -81,7 +93,17 @@ try {
     $details = $detailsStmt->fetch(PDO::FETCH_ASSOC);
 
     if ($details) {
-        $message = "Your application for " . ($details['job_title'] ?? 'a job') . " has been " . $status . ".";
+        $statusPhraseMap = [
+            'applied' => 'applied',
+            'pending' => 'marked as pending',
+            'reviewed' => 'reviewed',
+            'interview_scheduled' => 'scheduled for interview',
+            'interviewed' => 'marked as interviewed',
+            'accepted' => 'accepted',
+            'rejected' => 'rejected'
+        ];
+        $statusPhrase = $statusPhraseMap[$status] ?? str_replace('_', ' ', $status);
+        $message = "Your application for " . ($details['job_title'] ?? 'a job') . " has been " . $statusPhrase . ".";
         $insertQuery = "
             INSERT INTO notifications (user_id, application_id, job_id, status, message, is_read, created_at)
             VALUES (?, ?, ?, ?, ?, 0, NOW())

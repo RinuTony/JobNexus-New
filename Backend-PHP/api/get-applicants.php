@@ -59,12 +59,15 @@ try {
         a.resume_filename,  
         j.title AS job_title,
         j.id AS job_id,     
+        COALESCE(NULLIF(TRIM(rp.company_name), ''), ru.email) AS company_name,
         NULLIF(TRIM(CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, ''))), '') AS candidate_name,
         u.email AS candidate_email,
         u.id AS candidate_id,
         r.resume_data AS resume_data
     FROM applications a
     JOIN jobs j ON a.job_id = j.id
+    JOIN users ru ON ru.id = j.recruiter_id
+    LEFT JOIN recruiter_profiles rp ON rp.user_id = j.recruiter_id
     JOIN users u ON a.candidate_id = u.id
     LEFT JOIN profiles p ON u.id = p.user_id
     LEFT JOIN resumes r ON u.id = r.user_id

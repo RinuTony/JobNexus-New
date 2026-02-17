@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import InterviewPrep from "./pages/InterviewPrep";
 import MatchScore from "./pages/MatchScore";
 import ResumeRanking from "./pages/ResumeRanking";
+import RecruiterJobs from "./pages/RecruiterJobs";
 import Settings from "./pages/Settings";
 import JobListings from './pages/JobListings';
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -75,6 +76,7 @@ function App() {
         {/* Recruiter Routes */}
         <Route element={<ProtectedRoute allowedRoles={["recruiter"]} />}>
           <Route path="/recruiters" element={<Recruiters />} />
+          <Route path="/recruiter-jobs" element={<RecruiterJobs />} />
           <Route path="/rank-candidates" element={<ResumeRanking />} />
         </Route>
         

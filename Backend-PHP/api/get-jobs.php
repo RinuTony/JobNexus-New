@@ -7,33 +7,46 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . '/../config/database.php';
 
+function ensureAcceptingApplicationsColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE jobs ADD COLUMN accepting_applications TINYINT(1) NOT NULL DEFAULT 1");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
+
 try {
-    // Ã¢Å“â€¦ Railway PDO connection
     $database = new Database();
     $db = $database->getConnection();
+    ensureAcceptingApplicationsColumn($db);
 
     $sql = "
-        SELECT 
+        SELECT
             j.id,
             j.title,
             j.description,
+            j.accepting_applications,
             j.created_at,
-            u.email AS recruiter_email
+            u.email AS recruiter_email,
+            COALESCE(NULLIF(TRIM(rp.company_name), ''), u.email) AS company_name
         FROM jobs j
         JOIN users u ON j.recruiter_id = u.id
+        LEFT JOIN recruiter_profiles rp ON rp.user_id = j.recruiter_id
         ORDER BY j.created_at DESC
     ";
 
     $stmt = $db->prepare($sql);
     $stmt->execute();
 
-    $jobs = $stmt->fetchAll();
+    $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         "success" => true,
         "jobs" => $jobs
     ]);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
@@ -41,3 +54,4 @@ try {
         "message" => "Failed to fetch jobs"
     ]);
 }
+?>

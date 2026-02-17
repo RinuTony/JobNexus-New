@@ -7,6 +7,17 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . '/../config/database.php';
 
+function ensureAcceptingApplicationsColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE jobs ADD COLUMN accepting_applications TINYINT(1) NOT NULL DEFAULT 1");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
@@ -17,9 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // âœ… CREATE DB CONNECTION (THIS WAS MISSING)
     $database = new Database();
     $db = $database->getConnection();
+    ensureAcceptingApplicationsColumn($db);
 
     $job_id = $_POST['job_id'] ?? null;
     $candidate_id = $_POST['candidate_id'] ?? null;
@@ -28,7 +39,6 @@ try {
         throw new Exception("Missing required fields");
     }
 
-    /* ---------- FILE UPLOAD ---------- */
     if (!isset($_FILES['resume']) || $_FILES['resume']['error'] !== UPLOAD_ERR_OK) {
         throw new Exception("Resume upload failed");
     }
@@ -41,12 +51,24 @@ try {
     $fileExt = strtolower(pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION));
     $allowed = ['pdf', 'doc', 'docx', 'txt'];
 
-    if (!in_array($fileExt, $allowed)) {
+    if (!in_array($fileExt, $allowed, true)) {
         throw new Exception("Invalid file type");
     }
 
     if ($_FILES['resume']['size'] > 10 * 1024 * 1024) {
         throw new Exception("File too large (max 10MB)");
+    }
+
+    $jobStmt = $db->prepare("SELECT title, recruiter_id, accepting_applications FROM jobs WHERE id = ?");
+    $jobStmt->execute([$job_id]);
+    $job = $jobStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$job) {
+        throw new Exception("Job not found");
+    }
+
+    if ((int)($job['accepting_applications'] ?? 1) !== 1) {
+        throw new Exception("This job is no longer accepting applications");
     }
 
     $filename = uniqid("resume_", true) . "." . $fileExt;
@@ -56,10 +78,7 @@ try {
         throw new Exception("Failed to save file");
     }
 
-    /* ---------- DUPLICATE CHECK ---------- */
-    $check = $db->prepare(
-        "SELECT id FROM applications WHERE job_id = ? AND candidate_id = ?"
-    );
+    $check = $db->prepare("SELECT id FROM applications WHERE job_id = ? AND candidate_id = ?");
     $check->execute([$job_id, $candidate_id]);
 
     if ($check->rowCount() > 0) {
@@ -67,27 +86,21 @@ try {
         throw new Exception("Already applied for this job");
     }
 
-    /* ---------- INSERT APPLICATION ---------- */
-    $stmt = $db->prepare(
-        "INSERT INTO applications
+    $stmt = $db->prepare("
+        INSERT INTO applications
         (job_id, candidate_id, resume_filename, status, applied_at)
-        VALUES (?, ?, ?, 'pending', NOW())"
-    );
+        VALUES (?, ?, ?, 'pending', NOW())
+    ");
 
     $stmt->execute([$job_id, $candidate_id, $filename]);
     $applicationId = $db->lastInsertId();
 
-    /* ---------- NOTIFY RECRUITER ---------- */
-    $jobStmt = $db->prepare("SELECT title, recruiter_id FROM jobs WHERE id = ?");
-    $jobStmt->execute([$job_id]);
-    $job = $jobStmt->fetch(PDO::FETCH_ASSOC);
-
     if ($job && !empty($job['recruiter_id'])) {
         $message = "New application for " . ($job['title'] ?? 'your job') . ".";
-        $notifyStmt = $db->prepare(
-            "INSERT INTO notifications (user_id, application_id, job_id, status, message, is_read, created_at)
-             VALUES (?, ?, ?, 'applied', ?, 0, NOW())"
-        );
+        $notifyStmt = $db->prepare("
+            INSERT INTO notifications (user_id, application_id, job_id, status, message, is_read, created_at)
+            VALUES (?, ?, ?, 'applied', ?, 0, NOW())
+        ");
         $notifyStmt->execute([
             $job['recruiter_id'],
             $applicationId,
@@ -100,7 +113,6 @@ try {
         "success" => true,
         "message" => "Application submitted successfully"
     ]);
-
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
@@ -108,3 +120,4 @@ try {
         "message" => $e->getMessage()
     ]);
 }
+?>
