@@ -137,7 +137,7 @@ export default function Home() {
             textAlign: "center"
           }}>
             <p style={{ margin: 0, color: "#0369a1", fontWeight: "500" }}>
-              ðŸ‘‹ Welcome back! You are logged in as a <strong>{userRole}</strong>.
+              👋 Welcome back! You are logged in as a <strong>{userRole}</strong>.
               {userRole === "candidate" && " Explore job opportunities and enhance your career."}
               {userRole === "recruiter" && " Find the perfect candidates for your organization."}
               {userRole === "admin" && " Manage student placements and connect with recruiters."}
@@ -212,7 +212,8 @@ export default function Home() {
         )}
       </main>
 
-      <footer>&copy; 2025 Job Nexus â€“ Built for careers, powered by you!</footer>
+      <footer>&copy; 2025 Job Nexus - Built for careers, powered by you!</footer>
     </>
   );
 }
+

@@ -1,25 +1,17 @@
 import os
-<<<<<<< HEAD
 import base64
 import hashlib
 import time
-=======
->>>>>>> upstream/main
 import fitz  # PyMuPDF package
 from flask import Flask, request, jsonify, render_template
 import google.generativeai as genai
 import json
 import logging
-<<<<<<< HEAD
 from typing import Optional, Tuple
 from dotenv import load_dotenv
 from flask_cors import CORS
 from google.cloud import speech
 from google.cloud import texttospeech
-=======
-from dotenv import load_dotenv
-from flask_cors import CORS
->>>>>>> upstream/main
 
 # Setup
 load_dotenv() # Load environment variables from .env file
@@ -37,21 +29,14 @@ try:
         raise ValueError("GOOGLE_API_KEY not found in .env file")
     genai.configure(api_key=api_key)
     
-<<<<<<< HEAD
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     model = genai.GenerativeModel(model_name)
     
     log.info(f"--- Gemini API configured successfully with model '{model_name}' ---")
-=======
-    model = genai.GenerativeModel('gemini-2.5-flash') 
-    
-    log.info("--- Gemini API configured successfully with model 'gemini-1.0-pro' ---")
->>>>>>> upstream/main
 except Exception as e:
     log.error(f"Error configuring Gemini API: {e}")
     model = None
 
-<<<<<<< HEAD
 # Google Cloud Speech / TTS Configuration
 try:
     speech_client = speech.SpeechClient()
@@ -142,12 +127,6 @@ def transcribe_audio(
     except Exception as e:
         log.error(f"STT error: {e}")
         return None
-=======
-# ... rest of your code remains the same ...
-
-
-MAX_TEXT_LENGTH = 10000 
->>>>>>> upstream/main
 
 def extract_text_from_pdf(pdf_file):
     """Extracts text from an uploaded PDF file."""
@@ -165,7 +144,6 @@ def extract_text_from_pdf(pdf_file):
         log.error(f"Error extracting text from PDF: {e}")
         return ""
 
-<<<<<<< HEAD
 def extract_text_from_upload(upload):
     """Extract text from a PDF or plain-text upload."""
     filename = (upload.filename or "").lower()
@@ -191,10 +169,6 @@ def extract_text_from_upload(upload):
 
 
 def generate_questions(resume_text, jd_text, num_questions: int = 5):
-=======
-
-def generate_questions(resume_text, jd_text):
->>>>>>> upstream/main
     """Generates interview questions using the Gemini API."""
     if not model:
         return ["Error: Gemini model not initialized. Check your API key."]
@@ -202,11 +176,7 @@ def generate_questions(resume_text, jd_text):
     log.info("Generating questions with the Gemini API...")
     prompt = f"""
     As an expert HR manager, analyze the following resume and job description.
-<<<<<<< HEAD
     Generate {num_questions} insightful interview questions designed to probe the candidate's suitability for the role.
-=======
-    Generate 5 insightful interview questions designed to probe the candidate's suitability for the role.
->>>>>>> upstream/main
 
     Return your response ONLY as a single, valid JSON-formatted list of strings. Do not add any introductory text, explanations, or closing remarks. For example: ["Question 1?", "Question 2?"]
 
@@ -316,7 +286,6 @@ def start_interview():
     resume_file = request.files['resume']
     jd_file = request.files['job_description']
 
-<<<<<<< HEAD
     resume_text = extract_text_from_upload(resume_file)
     jd_text = extract_text_from_upload(jd_file)
 
@@ -334,22 +303,12 @@ def start_interview():
         }), 500
 
     questions = generate_questions(resume_text, jd_text, num_questions=5)
-=======
-    resume_text = extract_text_from_pdf(resume_file)
-    jd_text = extract_text_from_pdf(jd_file)
-
-    if not resume_text or not jd_text:
-        return jsonify({'error': 'Could not extract text from one or both PDFs.'}), 500
-
-    questions = generate_questions(resume_text, jd_text)
->>>>>>> upstream/main
     
     app.config['resume_text'] = resume_text
     app.config['jd_text'] = jd_text
     
     return jsonify({'questions': questions})
 
-<<<<<<< HEAD
 
 @app.route('/generate-questions', methods=['POST'])
 def generate_questions_endpoint():
@@ -434,8 +393,6 @@ def evaluate_advanced():
         "feedback_audio_mime": feedback_audio_mime,
     })
 
-=======
->>>>>>> upstream/main
 @app.route('/evaluate-answer', methods=['POST'])
 def evaluate():
     log.info("--- Received request for /evaluate-answer ---")
@@ -452,10 +409,6 @@ def evaluate():
     feedback = evaluate_answer(resume_text, jd_text, question, answer)
     return jsonify({'feedback': feedback})
 
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/main
 if __name__ == '__main__':
     if not model:
         log.error("Application cannot start. Gemini model failed to initialize. Please check your API key and .env file.")

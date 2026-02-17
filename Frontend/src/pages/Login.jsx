@@ -106,7 +106,7 @@ export default function Login() {
   return (
     <div className="login-page-compact">
       <div className="back-home">
-        <Link to="/home" className="back-link">â† Back to Home</Link>
+        <Link to="/home" className="back-link">← Back to Home</Link>
       </div>
 
       <div className="login-container-compact">
@@ -138,7 +138,7 @@ export default function Login() {
                 onClick={() => setRole("candidate")}
                 type="button"
               >
-                ðŸ‘¤ Candidate
+                👤 Candidate
               </button>
 
               <button
@@ -146,7 +146,7 @@ export default function Login() {
                 onClick={() => setRole("recruiter")}
                 type="button"
               >
-                ðŸ’¼ Recruiter
+                💼 Recruiter
               </button>
 
               <button
@@ -154,7 +154,7 @@ export default function Login() {
                 onClick={() => setRole("admin")}
                 type="button"
               >
-                ðŸ›ï¸ Admin
+                🏛️ Admin
               </button>
             </div>
 
@@ -244,3 +244,4 @@ export default function Login() {
     </div>
   );
 }
+

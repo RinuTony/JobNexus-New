@@ -438,7 +438,7 @@ export default function InterviewPrep() {
                         Session #{session.id} {session.status === "completed" ? "(Completed)" : "(In Progress)"}
                       </div>
                       <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                        Questions: {session.asked_count}/{session.total_questions} â€¢ Final Score: {session.final_score ?? 0}/10
+                        Questions: {session.asked_count}/{session.total_questions} • Final Score: {session.final_score ?? 0}/10
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
@@ -675,9 +675,9 @@ export default function InterviewPrep() {
                   </div>
                   <div style={{ fontSize: "12px", marginTop: "5px" }}>
                     {feedback[index] ? (
-                      <span style={{ color: "#059669" }}>âœ“ Score: {feedback[index].score}/10</span>
+                      <span style={{ color: "#059669" }}>✓ Score: {feedback[index].score}/10</span>
                     ) : answers[index] ? (
-                      <span style={{ color: "#f59e0b" }}>âœŽ Answered</span>
+                      <span style={{ color: "#f59e0b" }}>✎ Answered</span>
                     ) : (
                       <span style={{ color: "#9ca3af" }}>Not answered</span>
                     )}
@@ -758,3 +758,4 @@ export default function InterviewPrep() {
     </div>
   );
 }
+

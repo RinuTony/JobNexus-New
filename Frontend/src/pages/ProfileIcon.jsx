@@ -134,9 +134,9 @@ export default function ProfileIcon() {
               <h4>{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}</h4>
               <p className="user-email">{user?.email}</p>
               <p className="user-role">
-                {user?.role === "candidate" && "ðŸ‘¤ Candidate"}
-                {user?.role === "recruiter" && "ðŸ’¼ Recruiter"}
-                {user?.role === "admin" && "ðŸ›ï¸ College Admin"}
+                {user?.role === "candidate" && "👤 Candidate"}
+                {user?.role === "recruiter" && "💼 Recruiter"}
+                {user?.role === "admin" && "🏛️ College Admin"}
               </p>
             </div>
           </div>
@@ -183,3 +183,4 @@ export default function ProfileIcon() {
     </div>
   );
 }
+

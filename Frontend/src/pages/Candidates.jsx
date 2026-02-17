@@ -571,11 +571,6 @@ export default function Candidates() {
     };
   };
 
-  // Check if already applied
-  const hasApplied = (jobId) => {
-    return appliedJobs.some(app => String(app.job_id) === String(jobId));
-  };
-
   const handleTailorForJob = async (job, selection) => {
     if (!selection) {
       alert("Please select a resume for this job.");
@@ -664,26 +659,71 @@ export default function Candidates() {
   };
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const normalizeApplicationStatus = (rawStatus) => {
+    if (!rawStatus) return "unapplied";
+    const normalized = String(rawStatus).trim().toLowerCase().replace(/[\s-]+/g, "_");
+    switch (normalized) {
+      case "unapplied":
+        return "unapplied";
+      case "applied":
+        return "applied";
+      case "pending":
+        return "pending";
+      case "reviewed":
+      case "shortlisted":
+      case "in_review":
+        return "reviewed";
+      case "interview_scheduled":
+      case "interviewscheduled":
+      case "interview_schedule":
+        return "interview_scheduled";
+      case "interviewed":
+        return "interviewed";
+      case "accepted":
+      case "selected":
+        return "accepted";
+      case "rejected":
+        return "rejected";
+      default:
+        return "applied";
+    }
+  };
+
+  const statusMeta = {
+    unapplied: { label: "Unapplied", symbol: "[ ]", bg: "#f3f4f6", color: "#374151" },
+    applied: { label: "Applied", symbol: "[A]", bg: "#e0f2fe", color: "#075985" },
+    pending: { label: "Pending", symbol: "[...]", bg: "#fff7ed", color: "#9a3412" },
+    reviewed: { label: "Reviewed", symbol: "[R]", bg: "#ede9fe", color: "#5b21b6" },
+    interview_scheduled: { label: "Interview Scheduled", symbol: "[IS]", bg: "#ecfeff", color: "#155e75" },
+    interviewed: { label: "Interviewed", symbol: "[IV]", bg: "#f0fdf4", color: "#166534" },
+    accepted: { label: "Accepted", symbol: "[OK]", bg: "#dcfce7", color: "#166534" },
+    rejected: { label: "Rejected", symbol: "[X]", bg: "#fee2e2", color: "#991b1b" }
+  };
+
   const appliedJobStatus = appliedJobs.reduce((acc, app) => {
-    acc[String(app.job_id)] = app.status || "applied";
+    acc[String(app.job_id)] = normalizeApplicationStatus(app.status || "applied");
     return acc;
   }, {});
 
   const filteredJobs = jobs.filter((job) => {
-    const status = appliedJobStatus[String(job.id)];
+    const status = appliedJobStatus[String(job.id)] || "unapplied";
     switch (selectedJobFilter) {
       case "unapplied":
-        return !status;
+        return status === "unapplied";
       case "applied":
-        return !!status;
-      case "shortlisted":
-        return status === "shortlisted";
+        return status !== "unapplied";
       case "rejected":
         return status === "rejected";
       case "reviewed":
         return status === "reviewed";
       case "pending":
         return status === "pending";
+      case "interview_scheduled":
+        return status === "interview_scheduled";
+      case "interviewed":
+        return status === "interviewed";
+      case "accepted":
+        return status === "accepted";
       default:
         return true;
     }
@@ -1038,7 +1078,9 @@ export default function Candidates() {
                   <option value="applied">Applied</option>
                   <option value="pending">Pending</option>
                   <option value="reviewed">Reviewed</option>
-                  <option value="shortlisted">Shortlisted</option>
+                  <option value="interview_scheduled">Interview Scheduled</option>
+                  <option value="interviewed">Interviewed</option>
+                  <option value="accepted">Accepted</option>
                   <option value="rejected">Rejected</option>
                 </select>
                 <button
@@ -1100,7 +1142,9 @@ export default function Candidates() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     {filteredJobs.map((job) => {
-                      const hasAppliedToJob = hasApplied(job.id);
+                      const currentStatus = appliedJobStatus[String(job.id)] || "unapplied";
+                      const currentStatusMeta = statusMeta[currentStatus] || statusMeta.applied;
+                      const hasAppliedToJob = currentStatus !== "unapplied";
                       const jobMatchScore = matchScores[job.id];
                       const selection = getSelectedResumeForJob(job.id);
                       return (
@@ -1123,19 +1167,18 @@ export default function Candidates() {
                               {job.recruiter_email}
                             </p>
                           </div>
-                          {hasAppliedToJob && (
-                            <div style={{ 
-                              backgroundColor: "#10b981", 
-                              color: "white", 
-                              padding: "4px 8px", 
-                              borderRadius: "12px", 
-                              fontSize: "12px", 
-                              fontWeight: "500",
-                              whiteSpace: "nowrap"
-                            }}>
-                              ? Applied
-                            </div>
-                          )}
+                          <div style={{ 
+                            backgroundColor: currentStatusMeta.bg, 
+                            color: currentStatusMeta.color, 
+                            padding: "4px 10px", 
+                            borderRadius: "12px", 
+                            fontSize: "12px", 
+                            fontWeight: "600",
+                            whiteSpace: "nowrap",
+                            border: "1px solid rgba(0,0,0,0.06)"
+                          }}>
+                            {currentStatusMeta.symbol} {currentStatusMeta.label}
+                          </div>
                         </div>
                         
                         {(() => {
@@ -1366,7 +1409,7 @@ export default function Candidates() {
                             fontSize: "14px"
                           }}
                         >
-                          {hasAppliedToJob ? "? Applied" : "Apply Now"}
+                          {hasAppliedToJob ? `${currentStatusMeta.symbol} ${currentStatusMeta.label}` : "Apply Now"}
                         </button>
                       </div>
                     );
@@ -2031,7 +2074,7 @@ export default function Candidates() {
 
       {/* Footer */}
       <footer className="dashboard-footer">
-        <p>Â© 2025 Job Nexus</p>
+        <p>&copy; 2025 Job Nexus</p>
       </footer>
 
       {/* CSS */}
@@ -2059,4 +2102,5 @@ export default function Candidates() {
     </>
   );
 }
+
 

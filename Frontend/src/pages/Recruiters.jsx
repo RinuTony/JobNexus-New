@@ -824,7 +824,7 @@ export default function Recruiters() {
       <footer className="dashboard-footer">
         <p>&copy; 2025 Job Nexus - Recruiter Dashboard</p>
         <p style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-          {applications.length} total applications â€¢ Last updated: {new Date().toLocaleDateString()}
+          {applications.length} total applications • Last updated: {new Date().toLocaleDateString()}
         </p>
       </footer>
     </>
