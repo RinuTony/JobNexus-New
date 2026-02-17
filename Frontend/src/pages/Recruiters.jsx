@@ -727,6 +727,9 @@ export default function Recruiters() {
                             <strong>Email:</strong> {app.candidate_email || "N/A"}
                           </div>
                           <div>
+                            <strong>Phone:</strong> {app.candidate_phone || "N/A"}
+                          </div>
+                          <div>
                             <strong>Job:</strong> {app.job_title || "N/A"}
                           </div>
                           <div>
@@ -797,6 +800,14 @@ export default function Recruiters() {
                           </button>
                           <button
                             type="button"
+                            className="btn secondary"
+                            onClick={() => window.open(`tel:${app.candidate_phone}`, "_self")}
+                            disabled={!app.candidate_phone}
+                          >
+                            Call Candidate
+                          </button>
+                          <button
+                            type="button"
                             className="btn outline"
                             onClick={async () => {
                               try {
@@ -808,6 +819,22 @@ export default function Recruiters() {
                             }}
                           >
                             Copy Email
+                          </button>
+                          <button
+                            type="button"
+                            className="btn outline"
+                            disabled={!app.candidate_phone}
+                            onClick={async () => {
+                              if (!app.candidate_phone) return;
+                              try {
+                                await navigator.clipboard.writeText(app.candidate_phone);
+                                alert("Candidate phone copied.");
+                              } catch {
+                                alert("Could not copy phone.");
+                              }
+                            }}
+                          >
+                            Copy Phone
                           </button>
                         </div>
                       </div>

@@ -61,6 +61,7 @@ try {
         j.id AS job_id,     
         COALESCE(NULLIF(TRIM(rp.company_name), ''), ru.email) AS company_name,
         NULLIF(TRIM(CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, ''))), '') AS candidate_name,
+        NULLIF(TRIM(p.phone), '') AS candidate_phone,
         u.email AS candidate_email,
         u.id AS candidate_id,
         r.resume_data AS resume_data

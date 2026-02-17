@@ -1180,7 +1180,7 @@ export default function Candidates() {
                               {job.title}
                             </h3>
                             <p style={{ color: "#6b7280", fontSize: "13px" }}>
-                              {job.recruiter_email}
+                              {job.company_name || "Company"}
                             </p>
                           </div>
                           <div style={{ 

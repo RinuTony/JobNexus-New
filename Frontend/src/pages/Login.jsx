@@ -11,6 +11,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,7 +56,7 @@ export default function Login() {
 
       const payload = isLogin
         ? { email, password, role }
-        : { email, password, role, firstName, lastName };
+        : { email, password, role, firstName, lastName, companyName };
 
       const response = await fetch(url, {
         method: "POST",
@@ -187,6 +188,18 @@ export default function Login() {
                     required
                   />
                 </div>
+              </div>
+            )}
+
+            {!isLogin && role === "recruiter" && (
+              <div className="form-group-compact">
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Company name"
+                  required
+                />
               </div>
             )}
 

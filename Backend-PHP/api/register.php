@@ -32,10 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $input['role'] ?? 'candidate';
     $firstName = $input['firstName'] ?? '';
     $lastName = $input['lastName'] ?? '';
+    $companyName = trim($input['companyName'] ?? '');
     
     // Validate input
     if (empty($email) || empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Email and password are required']);
+        exit();
+    }
+
+    if ($role === 'recruiter' && $companyName === '') {
+        echo json_encode(['success' => false, 'message' => 'Company name is required for recruiter signup']);
         exit();
     }
     
@@ -90,8 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if ($tableName) {
-            $stmt = $db->prepare("INSERT INTO $tableName (user_id) VALUES (:user_id)");
-            $stmt->execute([':user_id' => $userId]);
+            if ($role === 'recruiter') {
+                $stmt = $db->prepare("INSERT INTO recruiter_profiles (user_id, company_name) VALUES (:user_id, :company_name)");
+                $stmt->execute([
+                    ':user_id' => $userId,
+                    ':company_name' => $companyName
+                ]);
+            } else {
+                $stmt = $db->prepare("INSERT INTO $tableName (user_id) VALUES (:user_id)");
+                $stmt->execute([':user_id' => $userId]);
+            }
         }
         
         // Commit transaction
@@ -105,7 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'email' => $email,
                 'role' => $role,
                 'firstName' => $firstName,
-                'lastName' => $lastName
+                'lastName' => $lastName,
+                'companyName' => $role === 'recruiter' ? $companyName : null
             ]
         ]);
         
