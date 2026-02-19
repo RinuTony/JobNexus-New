@@ -38,6 +38,7 @@ export default function Recruiters() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [requiredSkills, setRequiredSkills] = useState("");
   const [loading, setLoading] = useState(false);
   const [applications, setApplications] = useState([]);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
@@ -141,6 +142,7 @@ export default function Recruiters() {
         body: JSON.stringify({
           title,
           description,
+          required_skills: requiredSkills,
           recruiter_id: user.id,
         }),
       });
@@ -151,6 +153,7 @@ export default function Recruiters() {
         alert("Job posted successfully");
         setTitle("");
         setDescription("");
+        setRequiredSkills("");
         await fetchRecruiterJobs(user.id);
       } else {
         alert(data.message || "Failed to post job");
@@ -469,6 +472,18 @@ export default function Recruiters() {
                 className="job-textarea"
               ></textarea>
 
+              <label>
+                <strong>Required Skills (comma-separated)</strong>
+              </label>
+              <textarea
+                rows="3"
+                value={requiredSkills}
+                onChange={(e) => setRequiredSkills(e.target.value)}
+                required
+                placeholder="e.g., python, sql, react, docker, aws"
+                className="job-textarea"
+              ></textarea>
+
               <div className="button-group">
                 <button type="submit" disabled={loading} className="btn primary">
                   {loading ? "Posting..." : "Post Job"}
@@ -478,6 +493,7 @@ export default function Recruiters() {
                   onClick={() => {
                     setTitle("");
                     setDescription("");
+                    setRequiredSkills("");
                   }}
                   className="btn outline"
                 >

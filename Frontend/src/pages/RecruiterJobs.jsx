@@ -14,6 +14,7 @@ export default function RecruiterJobs() {
   const [editingJob, setEditingJob] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [requiredSkills, setRequiredSkills] = useState("");
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   const API_BASE = "http://localhost/JobNexus/Backend-PHP/api";
@@ -51,12 +52,14 @@ export default function RecruiterJobs() {
     setEditingJob(job);
     setTitle(job.title || "");
     setDescription(job.description || "");
+    setRequiredSkills(job.required_skills || "");
   };
 
   const cancelEdit = () => {
     setEditingJob(null);
     setTitle("");
     setDescription("");
+    setRequiredSkills("");
   };
 
   const submitEdit = async (e) => {
@@ -73,6 +76,7 @@ export default function RecruiterJobs() {
           recruiter_id: user.id,
           title,
           description,
+          required_skills: requiredSkills,
         }),
       });
       const data = await response.json();
@@ -265,6 +269,17 @@ export default function RecruiterJobs() {
                 className="job-textarea"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+
+              <label>
+                <strong>Required Skills (comma-separated)</strong>
+              </label>
+              <textarea
+                rows="3"
+                className="job-textarea"
+                value={requiredSkills}
+                onChange={(e) => setRequiredSkills(e.target.value)}
                 required
               />
 

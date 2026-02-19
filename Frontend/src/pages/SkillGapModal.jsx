@@ -491,8 +491,8 @@ const SkillGapModal = ({ isOpen, onClose, jobId, jobTitle, candidateId, matchPer
                                 gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
                                 gap: "12px"
                               }}>
-                                {[...(analysisData.course_recommendations[skill].youtube_videos || []),
-                                  ...(analysisData.course_recommendations[skill].online_courses || [])]
+                                {[...(analysisData.course_recommendations[skill].online_courses || []),
+                                  ...(analysisData.course_recommendations[skill].youtube_videos || [])]
                                   .slice(0, 3)
                                   .map((course, idx) => (
                                     <a

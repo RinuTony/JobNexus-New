@@ -31,6 +31,17 @@ function ensureAcceptingApplicationsColumn(PDO $db): void {
     }
 }
 
+function ensureRequiredSkillsColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE jobs ADD COLUMN required_skills TEXT NULL");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
+
 function notifyAppliedCandidates(PDO $db, int $jobId, string $status, string $message): void {
     $appsStmt = $db->prepare("
         SELECT id, candidate_id
@@ -68,8 +79,9 @@ $jobId = (int)($input['job_id'] ?? 0);
 $recruiterId = (int)($input['recruiter_id'] ?? 0);
 $title = trim($input['title'] ?? '');
 $description = trim($input['description'] ?? '');
+$requiredSkills = trim((string)($input['required_skills'] ?? ''));
 
-if (!$jobId || !$recruiterId || $title === '' || $description === '') {
+if (!$jobId || !$recruiterId || $title === '' || $description === '' || $requiredSkills === '') {
     http_response_code(400);
     echo json_encode([
         "success" => false,
@@ -82,6 +94,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     ensureAcceptingApplicationsColumn($db);
+    ensureRequiredSkillsColumn($db);
 
     $verify = $db->prepare("SELECT id, title FROM jobs WHERE id = :job_id AND recruiter_id = :recruiter_id");
     $verify->execute([
@@ -100,12 +113,13 @@ try {
 
     $stmt = $db->prepare("
         UPDATE jobs
-        SET title = :title, description = :description
+        SET title = :title, description = :description, required_skills = :required_skills
         WHERE id = :job_id AND recruiter_id = :recruiter_id
     ");
     $stmt->execute([
         ':title' => $title,
         ':description' => $description,
+        ':required_skills' => $requiredSkills,
         ':job_id' => $jobId,
         ':recruiter_id' => $recruiterId
     ]);

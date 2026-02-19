@@ -18,16 +18,29 @@ function ensureAcceptingApplicationsColumn(PDO $db): void {
     }
 }
 
+function ensureRequiredSkillsColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE jobs ADD COLUMN required_skills TEXT NULL");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
+
 try {
     $database = new Database();
     $db = $database->getConnection();
     ensureAcceptingApplicationsColumn($db);
+    ensureRequiredSkillsColumn($db);
 
     $sql = "
         SELECT
             j.id,
             j.title,
             j.description,
+            j.required_skills,
             j.accepting_applications,
             j.created_at,
             u.email AS recruiter_email,

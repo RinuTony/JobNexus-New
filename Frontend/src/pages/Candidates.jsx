@@ -1885,6 +1885,20 @@ export default function Candidates() {
             </div>
           </div>
         )}
+
+        {selectedMatchResult.reasoning_success === false && selectedMatchResult.reasoning_error && (
+          <div style={{
+            marginBottom: "16px",
+            padding: "12px",
+            backgroundColor: "#fef2f2",
+            borderRadius: "6px",
+            border: "1px solid #fecaca"
+          }}>
+            <p style={{ margin: 0, color: "#b91c1c", fontSize: "12px", textAlign: "center" }}>
+              AI feedback unavailable: {selectedMatchResult.reasoning_error}
+            </p>
+          </div>
+        )}
         
         {/* Recommendation Card */}
         <div style={{ backgroundColor: "#f8fafc", padding: "16px", borderRadius: "6px", borderLeft: "4px solid #3b82f6", marginBottom: "24px" }}>
@@ -1951,8 +1965,8 @@ export default function Candidates() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {Object.entries(skillGapData.course_recommendations).slice(0, 4).map(([skill, recs]) => {
                   const courses = [
-                    ...(recs.youtube_videos || []),
-                    ...(recs.online_courses || [])
+                    ...(recs.online_courses || []),
+                    ...(recs.youtube_videos || [])
                   ].slice(0, 3);
 
                   return (
@@ -2005,6 +2019,7 @@ export default function Candidates() {
                 })}
               </div>
             )}
+
           </div>
         )}
       </div>
@@ -2037,20 +2052,6 @@ export default function Candidates() {
         </button>
       </div>
       
-      {/* Note about reasoning */}
-      {selectedMatchResult.reasoning_success === false && (
-        <div style={{ 
-          marginTop: "16px", 
-          padding: "12px", 
-          backgroundColor: "#fef3c7", 
-          borderRadius: "6px",
-          border: "1px solid #fbbf24"
-        }}>
-          <p style={{ fontSize: "12px", color: "#92400e", margin: 0, textAlign: "center" }}>
-            Note: Using basic analysis. Enable AI analysis in backend for more detailed insights.
-          </p>
-        </div>
-      )}
     </div>
   </div>
 )}
