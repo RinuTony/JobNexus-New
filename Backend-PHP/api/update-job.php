@@ -81,7 +81,7 @@ $title = trim($input['title'] ?? '');
 $description = trim($input['description'] ?? '');
 $requiredSkills = trim((string)($input['required_skills'] ?? ''));
 
-if (!$jobId || !$recruiterId || $title === '' || $description === '' || $requiredSkills === '') {
+if (!$jobId || !$recruiterId || $title === '' || $description === '') {
     http_response_code(400);
     echo json_encode([
         "success" => false,
@@ -111,6 +111,14 @@ try {
         exit();
     }
 
+    // Preserve existing required skills if client sends empty value.
+    if ($requiredSkills === '') {
+        $existingSkillsStmt = $db->prepare("SELECT required_skills FROM jobs WHERE id = :job_id LIMIT 1");
+        $existingSkillsStmt->execute([':job_id' => $jobId]);
+        $existing = $existingSkillsStmt->fetch(PDO::FETCH_ASSOC);
+        $requiredSkills = trim((string)($existing['required_skills'] ?? ''));
+    }
+
     $stmt = $db->prepare("
         UPDATE jobs
         SET title = :title, description = :description, required_skills = :required_skills
@@ -125,17 +133,29 @@ try {
     ]);
 
     $message = "A recruiter updated the job you applied for: {$title}.";
-    notifyAppliedCandidates($db, $jobId, 'job_updated', $message);
+    // Keep job update successful even if notification insert fails.
+    try {
+        notifyAppliedCandidates($db, $jobId, 'job_updated', $message);
+    } catch (Exception $notifyError) {
+        error_log("update-job notifyAppliedCandidates failed for job {$jobId}: " . $notifyError->getMessage());
+    }
 
     echo json_encode([
         "success" => true,
-        "message" => "Job updated successfully"
+        "message" => "Job updated successfully",
+        "job" => [
+            "id" => $jobId,
+            "title" => $title,
+            "description" => $description,
+            "required_skills" => $requiredSkills
+        ]
     ]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Failed to update job"
+        "message" => "Failed to update job",
+        "error" => $e->getMessage()
     ]);
 }
 ?>

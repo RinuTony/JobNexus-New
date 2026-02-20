@@ -16,13 +16,11 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if already logged in and redirect
   React.useEffect(() => {
     const loggedIn = localStorage.getItem("loggedIn") === "true";
     const userRole = localStorage.getItem("userRole");
 
     if (loggedIn && userRole) {
-      // User is already logged in, redirect to their dashboard
       switch (userRole) {
         case "candidate":
           navigate("/candidates", { replace: true });
@@ -33,18 +31,26 @@ export default function Login() {
         case "admin":
           navigate("/collegeadmins", { replace: true });
           break;
+        case "database_admin":
+          navigate("/database-admin", { replace: true });
+          break;
         default:
           break;
       }
     }
   }, [navigate]);
 
-  // Set role from navigation state if provided
   React.useEffect(() => {
     if (location.state?.role) {
       setRole(location.state.role);
     }
   }, [location]);
+
+  React.useEffect(() => {
+    if (!isLogin && role === "database_admin") {
+      setRole("admin");
+    }
+  }, [isLogin, role]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,7 +85,6 @@ export default function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userRole", data.user.role);
 
-        // Redirect based on role
         switch (data.user.role) {
           case "candidate":
             navigate("/candidates");
@@ -89,6 +94,9 @@ export default function Login() {
             break;
           case "admin":
             navigate("/collegeadmins");
+            break;
+          case "database_admin":
+            navigate("/database-admin");
             break;
           default:
             navigate("/");
@@ -107,7 +115,7 @@ export default function Login() {
   return (
     <div className="login-page-compact">
       <div className="back-home">
-        <Link to="/home" className="back-link">← Back to Home</Link>
+        <Link to="/home" className="back-link">Back to Home</Link>
       </div>
 
       <div className="login-container-compact">
@@ -139,7 +147,7 @@ export default function Login() {
                 onClick={() => setRole("candidate")}
                 type="button"
               >
-                👤 Candidate
+                Candidate
               </button>
 
               <button
@@ -147,7 +155,7 @@ export default function Login() {
                 onClick={() => setRole("recruiter")}
                 type="button"
               >
-                💼 Recruiter
+                Recruiter
               </button>
 
               <button
@@ -155,14 +163,25 @@ export default function Login() {
                 onClick={() => setRole("admin")}
                 type="button"
               >
-                🏛️ Admin
+                Admin
               </button>
+
+              {isLogin && (
+                <button
+                  className={`role-tab-compact ${role === "database_admin" ? "active" : ""}`}
+                  onClick={() => setRole("database_admin")}
+                  type="button"
+                >
+                  Database Admin
+                </button>
+              )}
             </div>
 
             <div className="role-description-compact">
               {role === "candidate" && "Find jobs, build your resume, and get AI-powered career guidance"}
               {role === "recruiter" && "Post jobs, find candidates, and streamline your hiring process"}
               {role === "admin" && "Manage student placements and connect with recruiters"}
+              {role === "database_admin" && "Control system operations and database-level administration"}
             </div>
           </div>
 

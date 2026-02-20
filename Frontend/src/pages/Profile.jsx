@@ -340,7 +340,7 @@ export default function Profile() {
               </button>
             )}
             
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "database_admin") && (
               <button 
                 className={`profile-tab ${activeTab === "college" ? "active" : ""}`}
                 onClick={() => setActiveTab("college")}

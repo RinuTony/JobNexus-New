@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const API_BASE = "http://localhost:8000";
@@ -26,6 +26,29 @@ export default function InterviewPrep() {
   const [sessionsError, setSessionsError] = useState("");
   const [reviewSession, setReviewSession] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordedAnswers, setRecordedAnswers] = useState({});
+  const [recordingError, setRecordingError] = useState("");
+  const [autoReadQuestions, setAutoReadQuestions] = useState(true);
+  const mediaRecorderRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+
+  const stopMediaTracks = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      stopMediaTracks();
+    };
+  }, [stopMediaTracks]);
 
   useEffect(() => {
     if (jobId && !jobDetails) {
@@ -53,6 +76,8 @@ export default function InterviewPrep() {
     setAnswers({});
     setFeedback({});
     setFeedbackAudio({});
+    setRecordedAnswers({});
+    setRecordingError("");
     setFinalScore(null);
 
     try {
@@ -157,6 +182,8 @@ export default function InterviewPrep() {
     setAnswers({});
     setFeedback({});
     setFeedbackAudio({});
+    setRecordedAnswers({});
+    setRecordingError("");
     setFinalScore(null);
     setReviewSession(null);
 
@@ -232,12 +259,138 @@ export default function InterviewPrep() {
     return `data:${mime};base64,${base64}`;
   };
 
+  const blobToBase64 = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = String(reader.result || "");
+        const base64 = result.includes(",") ? result.split(",")[1] : "";
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+  const detectAudioFormat = (mimeType) => {
+    const mime = (mimeType || "").toLowerCase();
+    if (mime.includes("webm")) return "webm_opus";
+    if (mime.includes("ogg")) return "ogg_opus";
+    if (mime.includes("mp3") || mime.includes("mpeg")) return "mp3";
+    return "linear16";
+  };
+
+  const playCurrentQuestion = useCallback(() => {
+    const question = interviewQuestions[currentQuestionIndex];
+    if (!question) return;
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    const audioSrc = toAudioSrc(question.question_audio_base64, question.question_audio_mime);
+    if (audioSrc) {
+      const audio = new Audio(audioSrc);
+      audio.play().catch(() => {});
+      return;
+    }
+
+    if (window.speechSynthesis && question.question_text) {
+      const utterance = new SpeechSynthesisUtterance(question.question_text);
+      utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [currentQuestionIndex, interviewQuestions]);
+
+  useEffect(() => {
+    if (!interviewStarted || !autoReadQuestions || !currentQuestion) return;
+    playCurrentQuestion();
+  }, [autoReadQuestions, currentQuestion, interviewStarted, playCurrentQuestion]);
+
+  const startRecording = async () => {
+    try {
+      setRecordingError("");
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Microphone recording is not supported in this browser.");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      recordedChunksRef.current = [];
+
+      const preferredMime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "";
+      const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+    } catch (err) {
+      console.error(err);
+      setRecordingError(err.message || "Unable to start recording.");
+      stopMediaTracks();
+    }
+  };
+
+  const stopRecording = async () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+
+    await new Promise((resolve) => {
+      recorder.onstop = async () => {
+        try {
+          const mimeType = recorder.mimeType || "audio/webm";
+          const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+          const base64 = await blobToBase64(blob);
+          const objectUrl = URL.createObjectURL(blob);
+          setRecordedAnswers((prev) => {
+            const existing = prev[currentQuestionIndex];
+            if (existing?.url) {
+              URL.revokeObjectURL(existing.url);
+            }
+            return {
+              ...prev,
+              [currentQuestionIndex]: { base64, mime: mimeType, url: objectUrl },
+            };
+          });
+        } catch (err) {
+          console.error(err);
+          setRecordingError("Failed to process recorded audio.");
+        } finally {
+          stopMediaTracks();
+          setRecording(false);
+          resolve();
+        }
+      };
+      recorder.stop();
+    });
+  };
+
+  const clearCurrentRecording = () => {
+    const existing = recordedAnswers[currentQuestionIndex];
+    if (existing?.url) {
+      URL.revokeObjectURL(existing.url);
+    }
+    setRecordedAnswers((prev) => {
+      const next = { ...prev };
+      delete next[currentQuestionIndex];
+      return next;
+    });
+  };
+
 
   const evaluateAnswer = async () => {
     if (!currentQuestion) return;
     const currentAnswer = answers[currentQuestionIndex] || "";
-    if (!currentAnswer.trim()) {
-      alert("Please type your answer before evaluating.");
+    const audioAnswer = recordedAnswers[currentQuestionIndex];
+    if (!currentAnswer.trim() && !audioAnswer?.base64) {
+      alert("Please type your answer or record your answer before evaluating.");
       return;
     }
 
@@ -251,9 +404,9 @@ export default function InterviewPrep() {
         body: JSON.stringify({
           session_id: sessionId,
           question_id: currentQuestion.id,
-          answer_text: currentAnswer.trim(),
-          answer_audio_base64: null,
-          audio_format: null,
+          answer_text: currentAnswer.trim() || null,
+          answer_audio_base64: audioAnswer?.base64 || null,
+          audio_format: audioAnswer?.mime ? detectAudioFormat(audioAnswer.mime) : null,
           sample_rate_hz: null,
           include_audio: true,
         }),
@@ -303,6 +456,7 @@ export default function InterviewPrep() {
       if (data.done) {
         setFinalScore(data.final_score ?? 0);
         setInterviewStarted(false);
+        fetchSessions();
         return;
       }
       appendQuestion(data.next_question);
@@ -327,6 +481,7 @@ export default function InterviewPrep() {
         body: JSON.stringify({ session_id: sessionId }),
       });
       setInterviewStarted(false);
+      fetchSessions();
     } catch (err) {
       console.error(err);
       setErrorMessage("Failed to stop interview.");
@@ -339,6 +494,21 @@ export default function InterviewPrep() {
       .map((f) => f.score);
     if (scores.length === 0) return 0;
     return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+  };
+
+  const renderFeedbackDetails = (feedbackJson) => {
+    if (!feedbackJson) return <div style={{ color: "#6b7280" }}>No feedback recorded.</div>;
+    if (typeof feedbackJson === "string") return <div>{feedbackJson}</div>;
+    const strength = Array.isArray(feedbackJson.strength) ? feedbackJson.strength : [];
+    const improvement = Array.isArray(feedbackJson.improvement) ? feedbackJson.improvement : [];
+    const scoreText = typeof feedbackJson.score === "number" ? `Score: ${feedbackJson.score}/10` : null;
+    return (
+      <div>
+        {scoreText && <div style={{ marginBottom: "6px" }}>{scoreText}</div>}
+        {strength.length > 0 && <div><strong>Strengths:</strong> {strength.join(" | ")}</div>}
+        {improvement.length > 0 && <div><strong>Improvements:</strong> {improvement.join(" | ")}</div>}
+      </div>
+    );
   };
 
   return (
@@ -509,6 +679,30 @@ export default function InterviewPrep() {
             </h4>
             <p style={{ fontSize: "18px", marginBottom: "12px" }}>{currentQuestion.question_text}</p>
 
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "12px" }}>
+              <button
+                onClick={playCurrentQuestion}
+                style={{
+                  padding: "8px 12px",
+                  backgroundColor: "#1d4ed8",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                Speak Question
+              </button>
+              <label style={{ fontSize: "14px", color: "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
+                <input
+                  type="checkbox"
+                  checked={autoReadQuestions}
+                  onChange={(e) => setAutoReadQuestions(e.target.checked)}
+                />
+                Auto-read next questions
+              </label>
+            </div>
+
             {currentQuestion.question_audio_base64 && (
               <audio
                 controls
@@ -535,7 +729,70 @@ export default function InterviewPrep() {
             />
           </div>
 
-            <div style={{ marginBottom: "16px" }} />
+            <div style={{ marginBottom: "16px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {!recording ? (
+                <button
+                  onClick={startRecording}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#2563eb",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Record Answer
+                </button>
+              ) : (
+                <button
+                  onClick={stopRecording}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#dc2626",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Stop Recording
+                </button>
+              )}
+              {recordedAnswers[currentQuestionIndex]?.base64 && (
+                <button
+                  onClick={clearCurrentRecording}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#e5e7eb",
+                    color: "#111827",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear Recording
+                </button>
+              )}
+            </div>
+
+            {recording && (
+              <div style={{ marginBottom: "12px", color: "#b91c1c", fontWeight: "600" }}>
+                Recording in progress...
+              </div>
+            )}
+            {recordingError && (
+              <div style={{ marginBottom: "12px", color: "#b91c1c" }}>
+                {recordingError}
+              </div>
+            )}
+            {recordedAnswers[currentQuestionIndex]?.url && (
+              <audio
+                controls
+                src={recordedAnswers[currentQuestionIndex].url}
+                style={{ width: "100%", marginBottom: "16px" }}
+              />
+            )}
 
             <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
               <button
@@ -737,10 +994,10 @@ export default function InterviewPrep() {
                     </div>
                     {answer.feedback_json && (
                       <div style={{ fontSize: "13px", color: "#374151" }}>
-                        <strong>Feedback:</strong>{" "}
-                        {typeof answer.feedback_json === "string"
-                          ? answer.feedback_json
-                          : JSON.stringify(answer.feedback_json)}
+                        <strong>Feedback:</strong>
+                        <div style={{ marginTop: "4px" }}>
+                          {renderFeedbackDetails(answer.feedback_json)}
+                        </div>
                       </div>
                     )}
                     {answer.score !== undefined && (

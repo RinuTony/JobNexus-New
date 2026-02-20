@@ -40,6 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    if ($role === 'database_admin') {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Database admin accounts cannot be created via public signup'
+        ]);
+        exit();
+    }
+
     if ($role === 'recruiter' && $companyName === '') {
         echo json_encode(['success' => false, 'message' => 'Company name is required for recruiter signup']);
         exit();

@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -30,11 +31,20 @@ try {
     $email = $input['email'] ?? '';
     $password = $input['password'] ?? '';
     $role = $input['role'] ?? 'candidate';
+    $allowedRoles = ['candidate', 'recruiter', 'admin', 'database_admin'];
 
     if (empty($email) || empty($password)) {
         echo json_encode([
             'success' => false,
             'message' => 'Email and password are required'
+        ]);
+        exit();
+    }
+
+    if (!in_array($role, $allowedRoles, true)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid role'
         ]);
         exit();
     }
@@ -79,6 +89,7 @@ try {
         'candidate' => 'candidate_profiles',
         'recruiter' => 'recruiter_profiles',
         'admin' => 'admin_profiles',
+        'database_admin' => 'admin_profiles',
         default => null
     };
 
@@ -102,11 +113,11 @@ try {
             'profile' => array_merge($commonProfile, $roleProfile)
         ],
         // Ã¢Å¡Â Ã¯Â¸Â Replace with JWT later
-        'token' => base64_encode(json_encode([
+        'token' => create_auth_token([
             'userId' => $user['id'],
             'email' => $user['email'],
             'role' => $user['role']
-        ]))
+        ])
     ]);
 
 } catch (Exception $e) {

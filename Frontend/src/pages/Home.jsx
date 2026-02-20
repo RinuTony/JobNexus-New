@@ -21,6 +21,9 @@ export default function Home() {
           case "admin":
             navigate("/collegeadmins");
             break;
+          case "database_admin":
+            navigate("/database-admin");
+            break;
           default:
             navigate("/");
             break;
@@ -141,6 +144,7 @@ export default function Home() {
               {userRole === "candidate" && " Explore job opportunities and enhance your career."}
               {userRole === "recruiter" && " Find the perfect candidates for your organization."}
               {userRole === "admin" && " Manage student placements and connect with recruiters."}
+              {userRole === "database_admin" && " Manage system-wide and database-level controls."}
             </p>
             <div style={{ marginTop: "1rem", display: "flex", gap: "10px", justifyContent: "center" }}>
               <button 

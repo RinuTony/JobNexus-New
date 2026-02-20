@@ -31,13 +31,9 @@ export default function Candidates() {
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState("");
   const [selectedJobFilter, setSelectedJobFilter] = useState("all");
-  const [tailorLoading, setTailorLoading] = useState({});
   const [expandedJobDescriptions, setExpandedJobDescriptions] = useState({});
   
   const [selectedResumeByJob, setSelectedResumeByJob] = useState({});
-  const [showTailorTextModal, setShowTailorTextModal] = useState(false);
-  const [tailorTextResult, setTailorTextResult] = useState("");
-  const [tailorTextJobTitle, setTailorTextJobTitle] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user"));
   const visibleBuilderResumes = builderResumes.filter(
@@ -575,86 +571,6 @@ export default function Candidates() {
     };
   };
 
-  const handleTailorForJob = async (job, selection) => {
-    if (!selection) {
-      alert("Please select a resume for this job.");
-      return;
-    }
-
-    setTailorLoading((prev) => ({ ...prev, [job.id]: true }));
-
-    try {
-      if (selection.source === "builder") {
-        const resume = visibleBuilderResumes.find((r) => String(r.id) === String(selection.id));
-        if (!resume || !resume.resume_data) {
-          throw new Error("Selected Resume Builder resume is unavailable.");
-        }
-
-        const resumePayload = {
-          ...resume.resume_data,
-          selectedTemplate:
-            resume.resume_data?.selectedTemplate ?? resume.template_id ?? null,
-          settings:
-            resume.resume_data?.settings ?? { font: "Arial", color: "#2563eb", spacing: "normal" }
-        };
-
-        const response = await fetch("http://localhost:8000/api/tailor-resume", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            resume_data: resumePayload,
-            job_id: String(job.id),
-            job_description: job.description || null
-          })
-        });
-
-        const contentType = response.headers.get("content-type") || "";
-        const data = contentType.includes("application/json")
-          ? await response.json()
-          : { success: false, message: await response.text() };
-
-        if (!response.ok || !data.success || !data.resume_data) {
-          throw new Error(data.message || "Failed to tailor resume");
-        }
-
-        navigate("/resume-builder", {
-          state: {
-            resumeData: data.resume_data,
-            tailorSummary: data.changes_summary || "Resume tailored successfully.",
-            jobTitle: job.title
-          }
-        });
-      } else {
-        const response = await fetch("http://localhost:8000/api/tailor-resume-text", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            candidate_id: String(user.id),
-            job_id: String(job.id),
-            resume_filename: selection.filename
-          })
-        });
-
-        const contentType = response.headers.get("content-type") || "";
-        const data = contentType.includes("application/json")
-          ? await response.json()
-          : { success: false, message: await response.text() };
-
-        if (!response.ok || !data.success || !data.tailored_text) {
-          throw new Error(data.message || "Failed to tailor resume");
-        }
-
-        setTailorTextResult(data.tailored_text);
-        setTailorTextJobTitle(job.title);
-        setShowTailorTextModal(true);
-      }
-    } catch (error) {
-      console.error("Tailor resume error:", error);
-      alert(error.message || "Failed to tailor resume. Please try again.");
-    } finally {
-      setTailorLoading((prev) => ({ ...prev, [job.id]: false }));
-    }
-  };
 
   const formatNotificationTime = (dateString) => {
     if (!dateString) return "";
@@ -1359,32 +1275,6 @@ export default function Candidates() {
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                handleTailorForJob(job, selection);
-                              }}
-                              disabled={tailorLoading[job.id] || !selection}
-                              style={{
-                                padding: "8px 12px",
-                                backgroundColor: "#1f2937",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "6px",
-                                cursor: tailorLoading[job.id] ? "not-allowed" : "pointer",
-                                fontSize: "13px",
-                                fontWeight: "500",
-                                flex: "1 1 120px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "6px"
-                              }}
-                            >
-                              <Sparkles size={14} />
-                              {tailorLoading[job.id] ? "..." : "Tailor"}
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
                                 startInterviewPrep(job.id);
                               }}
                               disabled={interviewLoading[job.id] || !selection}
@@ -2055,43 +1945,6 @@ export default function Candidates() {
     </div>
   </div>
 )}
-
-      {/* Tailored Resume Text Modal */}
-      {showTailorTextModal && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 50 }}>
-          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "24px", width: "90%", maxWidth: "720px", maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", gap: "12px" }}>
-              <div>
-                <h3 style={{ fontSize: "18px", fontWeight: "600", margin: 0 }}>Tailored Resume</h3>
-                <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#6b7280" }}>
-                  {tailorTextJobTitle ? `For: ${tailorTextJobTitle}` : "For selected job"}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowTailorTextModal(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280" }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <textarea
-              readOnly
-              value={tailorTextResult}
-              style={{
-                width: "100%",
-                minHeight: "320px",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-                padding: "12px",
-                fontSize: "13px",
-                lineHeight: "1.5",
-                color: "#111827",
-                backgroundColor: "#f9fafb"
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="dashboard-footer">

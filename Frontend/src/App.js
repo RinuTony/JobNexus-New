@@ -16,6 +16,9 @@ import JobListings from './pages/JobListings';
 import ProtectedRoute from "./components/ProtectedRoute";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumePreview from './pages/ResumePreview';
+import DatabaseAdmin from "./pages/DatabaseAdmin";
+import DatabaseAdminUsers from "./pages/DatabaseAdminUsers";
+import DatabaseAdminRecords from "./pages/DatabaseAdminRecords";
 
 // Component to handle initial redirect
 function InitialRedirect() {
@@ -36,6 +39,9 @@ function InitialRedirect() {
           break;
         case "admin":
           setRedirect("/collegeadmins");
+          break;
+        case "database_admin":
+          setRedirect("/database-admin");
           break;
         default:
           setRedirect("/login");
@@ -84,9 +90,15 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/collegeadmins" element={<CollegeAdmins />} />
         </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["database_admin"]} />}>
+          <Route path="/database-admin" element={<DatabaseAdmin />} />
+          <Route path="/database-admin/users" element={<DatabaseAdminUsers />} />
+          <Route path="/database-admin/records" element={<DatabaseAdminRecords />} />
+        </Route>
         
         {/* Shared Routes (all logged-in users) */}
-        <Route element={<ProtectedRoute allowedRoles={["candidate", "recruiter", "admin"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["candidate", "recruiter", "admin", "database_admin"]} />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/jobs" element={<JobListings />} />

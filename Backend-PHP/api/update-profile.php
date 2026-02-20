@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/auth.php';
 
 header("Content-Type: application/json");
 
@@ -25,13 +26,16 @@ try {
     // Ã¢Å“â€¦ Use Database class instead of creating own PDO
     $database = new Database();
     $db = $database->getConnection();
-    
-    // Resolve role from DB if not provided by client
-    if (!$userRole) {
-        $roleStmt = $db->prepare("SELECT role FROM users WHERE id = :user_id");
-        $roleStmt->execute([':user_id' => $userId]);
-        $userRole = $roleStmt->fetchColumn();
+    $authUser = require_auth($db);
+
+    if ((int)$authUser['id'] !== (int)$userId && $authUser['role'] !== 'database_admin') {
+        auth_json_error(403, 'Forbidden');
     }
+    
+    // Resolve role from DB only; do not trust client role.
+    $roleStmt = $db->prepare("SELECT role FROM users WHERE id = :user_id");
+    $roleStmt->execute([':user_id' => $userId]);
+    $userRole = $roleStmt->fetchColumn();
 
     // Start transaction
     $db->beginTransaction();
@@ -102,6 +106,7 @@ try {
             ]);
             break;
         case 'admin':
+        case 'database_admin':
             $stmt = $db->prepare("
                 INSERT INTO admin_profiles (
                     user_id, college_name, department, position, student_count

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfileIcon from "./ProfileIcon";
 import "./RecruiterJobs.css";
@@ -16,6 +16,7 @@ export default function RecruiterJobs() {
   const [description, setDescription] = useState("");
   const [requiredSkills, setRequiredSkills] = useState("");
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const editSectionRef = useRef(null);
 
   const API_BASE = "http://localhost/JobNexus/Backend-PHP/api";
   const user = useMemo(() => JSON.parse(localStorage.getItem("user")), []);
@@ -48,6 +49,12 @@ export default function RecruiterJobs() {
     fetchJobs();
   }, [fetchJobs, navigate, user]);
 
+  useEffect(() => {
+    if (editingJob && editSectionRef.current) {
+      editSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [editingJob]);
+
   const startEdit = (job) => {
     setEditingJob(job);
     setTitle(job.title || "");
@@ -65,6 +72,14 @@ export default function RecruiterJobs() {
   const submitEdit = async (e) => {
     e.preventDefault();
     if (!editingJob?.id || !user?.id) return;
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const trimmedRequiredSkills = requiredSkills.trim();
+
+    if (!trimmedTitle || !trimmedDescription) {
+      alert("Job title and description are required.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -74,21 +89,40 @@ export default function RecruiterJobs() {
         body: JSON.stringify({
           job_id: editingJob.id,
           recruiter_id: user.id,
-          title,
-          description,
-          required_skills: requiredSkills,
+          title: trimmedTitle,
+          description: trimmedDescription,
+          required_skills: trimmedRequiredSkills,
         }),
       });
-      const data = await response.json();
-      if (data.success) {
+      const raw = await response.text();
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(raw || "Invalid response from server.");
+      }
+
+      if (response.ok && data.success) {
+        setJobs((prev) =>
+          prev.map((job) =>
+            String(job.id) === String(editingJob.id)
+              ? {
+                  ...job,
+                  title: data?.job?.title ?? trimmedTitle,
+                  description: data?.job?.description ?? trimmedDescription,
+                  required_skills: data?.job?.required_skills ?? trimmedRequiredSkills,
+                }
+              : job
+          )
+        );
         cancelEdit();
         fetchJobs();
       } else {
-        alert(data.message || "Failed to update job.");
+        alert(data.message || data.error || "Failed to update job.");
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to update job.");
+      alert(err.message || "Failed to update job.");
     } finally {
       setSaving(false);
     }
@@ -174,6 +208,55 @@ export default function RecruiterJobs() {
       </header>
 
       <main className="recruiter-jobs-layout">
+        {editingJob && (
+          <section className="recruiter-jobs-card" ref={editSectionRef}>
+            <h2>Edit Job</h2>
+            <form onSubmit={submitEdit} className="job-edit-form">
+              <label>
+                <strong>Job Title</strong>
+              </label>
+              <input
+                type="text"
+                className="job-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+
+              <label>
+                <strong>Job Description</strong>
+              </label>
+              <textarea
+                rows="8"
+                className="job-textarea"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+
+              <label>
+                <strong>Required Skills (comma-separated)</strong>
+              </label>
+              <textarea
+                rows="3"
+                className="job-textarea"
+                value={requiredSkills}
+                onChange={(e) => setRequiredSkills(e.target.value)}
+                placeholder="e.g., python, sql, docker"
+              />
+
+              <div className="button-row">
+                <button type="submit" className="btn primary" disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+                <button type="button" className="btn outline" onClick={cancelEdit}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
         <section className="recruiter-jobs-card">
           <h2>Your Jobs</h2>
           {loading ? (
@@ -246,54 +329,6 @@ export default function RecruiterJobs() {
           )}
         </section>
 
-        {editingJob && (
-          <section className="recruiter-jobs-card">
-            <h2>Edit Job</h2>
-            <form onSubmit={submitEdit} className="job-edit-form">
-              <label>
-                <strong>Job Title</strong>
-              </label>
-              <input
-                type="text"
-                className="job-input"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-
-              <label>
-                <strong>Job Description</strong>
-              </label>
-              <textarea
-                rows="8"
-                className="job-textarea"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-
-              <label>
-                <strong>Required Skills (comma-separated)</strong>
-              </label>
-              <textarea
-                rows="3"
-                className="job-textarea"
-                value={requiredSkills}
-                onChange={(e) => setRequiredSkills(e.target.value)}
-                required
-              />
-
-              <div className="button-row">
-                <button type="submit" className="btn primary" disabled={saving}>
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
-                <button type="button" className="btn outline" onClick={cancelEdit}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </section>
-        )}
       </main>
     </>
   );
