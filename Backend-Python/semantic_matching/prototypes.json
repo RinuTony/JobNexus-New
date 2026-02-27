@@ -1,0 +1,30 @@
+{
+  "skills": [
+    "Technical skills: Python, Java, JavaScript, SQL, Linux, Docker",
+    "Core competencies: machine learning, data structures, algorithms, React"
+  ],
+  "education": [
+    "Bachelor of Technology in Computer Science from XYZ University, 2023",
+    "MSc in Computer Science, GPA 3.8, University of ABC"
+  ],
+  "experience": [
+    "Software Engineer at Company X (June 2022 - Present): developed REST APIs",
+    "Worked at Startup Y building backend services and CI/CD pipelines"
+  ],
+  "projects": [
+    "Project: Smart Parking System — built an IoT-based solution",
+    "Academic project: Implemented compiler front-end using ANTLR and Java"
+  ],
+  "certifications": [
+    "AWS Certified Solutions Architect",
+    "Certified Data Scientist - online course certification"
+  ],
+  "summary": [
+    "Motivated software developer with 2 years experience in backend development",
+    "Goal-oriented student focusing on machine learning and software engineering"
+  ],
+  "contact": [
+    "Contact: +91-9876543210, email: alice@example.com",
+    "Phone: (555) 123-4567, Email: bob@example.com, LinkedIn: linkedin.com/in/bob"
+  ]
+}
