@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Bell } from "lucide-react";
 import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
@@ -59,6 +60,8 @@ export default function Recruiters() {
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState("");
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  const notificationsMenuRef = useRef(null);
 
   const API_BASE = "http://localhost/JobNexus/Backend-PHP/api";
   const user = useMemo(() => JSON.parse(localStorage.getItem("user")), []);
@@ -129,6 +132,17 @@ export default function Recruiters() {
     fetchRecruiterJobs(user.id);
     fetchRecruiterNotifications(user.id);
   }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
+        setShowNotificationsMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Post job
   const handlePostJob = async (e) => {
@@ -452,27 +466,127 @@ export default function Recruiters() {
 
   return (
     <>
-      <header
-        className="dashboard-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem 2rem",
-          background: "white",
-          borderBottom: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: "1.5rem", color: "#1f2937" }}>
-            Recruiter Dashboard
-          </h1>
-          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.875rem", color: "#6b7280" }}>
+      <header className="dashboard-header">
+        <div className="dashboard-header-copy">
+          <h1 className="dashboard-banner-title">Recruiter Dashboard</h1>
+          <p className="dashboard-banner-subtitle">
             Manage job postings and review candidate applications
           </p>
         </div>
-        <div className="dashboard-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <div className="dashboard-header-actions-row">
+          <div ref={notificationsMenuRef} style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowNotificationsMenu((prev) => !prev)}
+              style={{
+                position: "relative",
+                width: "40px",
+                height: "40px",
+                borderRadius: "999px",
+                border: "1px solid #d1d5db",
+                backgroundColor: "white",
+                color: "#374151",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer"
+              }}
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: "-3px",
+                  right: "-3px",
+                  minWidth: "16px",
+                  height: "16px",
+                  borderRadius: "999px",
+                  backgroundColor: "#4A70A9",
+                  color: "white",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 4px"
+                }}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+            {showNotificationsMenu && (
+              <div style={{
+                position: "absolute",
+                top: "46px",
+                right: 0,
+                width: "340px",
+                maxHeight: "420px",
+                overflowY: "auto",
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                zIndex: 60,
+                padding: "10px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#1f2937" }}>Notifications</div>
+                  <div style={{ fontSize: "11px", color: "#6b7280" }}>{unreadCount} unread</div>
+                </div>
+                {notificationsLoading && (
+                  <div style={{ color: "#6b7280", fontSize: "13px", padding: "8px 4px" }}>
+                    Loading notifications...
+                  </div>
+                )}
+                {!notificationsLoading && notificationsError && (
+                  <div style={{ color: "#b91c1c", fontSize: "13px", padding: "8px 4px" }}>
+                    {notificationsError}
+                  </div>
+                )}
+                {!notificationsLoading && !notificationsError && notifications.length === 0 && (
+                  <div style={{ color: "#6b7280", fontSize: "13px", padding: "8px 4px" }}>
+                    No notifications yet.
+                  </div>
+                )}
+                {!notificationsLoading && !notificationsError && notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      padding: "10px",
+                      marginBottom: "8px",
+                      backgroundColor: n.is_read ? "#f9fafb" : "#eef2ff"
+                    }}
+                  >
+                    <div style={{ fontSize: "13px", color: "#1f2937", fontWeight: 500 }}>
+                      {n.message || `New application status: ${humanizeNotificationStatus(n.status)}`}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>
+                      {formatDate(n.created_at)}
+                    </div>
+                    {!n.is_read && (
+                      <button
+                        onClick={() => markNotificationRead(n.id)}
+                        style={{
+                          marginTop: "6px",
+                          fontSize: "11px",
+                          background: "transparent",
+                          border: "none",
+                          color: "#4A70A9",
+                          cursor: "pointer",
+                          padding: 0
+                        }}
+                      >
+                        Mark as read
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <ProfileIcon />
         </div>
       </header>
@@ -920,53 +1034,6 @@ export default function Recruiters() {
             </div>
           </section>
 
-          {/* Right: Notifications */}
-          <section className="card notifications-card">
-            <h2>Notifications</h2>
-            <div className="notifications-panel">
-              <div className="notifications-header">
-                <h3>Updates</h3>
-                <span className={`notifications-badge ${unreadCount > 0 ? "unread" : ""}`}>
-                  {unreadCount} unread
-                </span>
-              </div>
-
-              <div className="notifications-list">
-                {notificationsLoading && (
-                  <div className="notifications-empty">Loading notifications...</div>
-                )}
-                {!notificationsLoading && notificationsError && (
-                  <div className="notifications-error">{notificationsError}</div>
-                )}
-                {!notificationsLoading && !notificationsError && notifications.length === 0 && (
-                  <div className="notifications-empty">No notifications yet.</div>
-                )}
-                {!notificationsLoading &&
-                  !notificationsError &&
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`notification-item ${n.is_read ? "" : "unread"}`}
-                    >
-                      <div className="notification-message">
-                        {n.message || `New application status: ${humanizeNotificationStatus(n.status)}`}
-                      </div>
-                      <div className="notification-meta">
-                        {formatDate(n.created_at)}
-                      </div>
-                      {!n.is_read && (
-                        <button
-                          className="notification-read"
-                          onClick={() => markNotificationRead(n.id)}
-                        >
-                          Mark as read
-                        </button>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </section>
         </div>
       </main>
 

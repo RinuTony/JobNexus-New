@@ -9,7 +9,13 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.college-admin-header-copy {
+  flex: 1;
 }
 
 .college-admin-header p {
@@ -20,28 +26,19 @@
 .college-admin-header-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
-.college-admin-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+.dashboard-banner-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #0f3d75;
 }
 
-.college-admin-tabs button {
-  border: 1px solid #d1d5db;
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.college-admin-tabs button.active {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  color: #312e81;
-  font-weight: 600;
+.college-tab-select {
+  min-width: 180px;
 }
 
 .college-admin-card {
@@ -49,7 +46,7 @@
   border-radius: 12px;
   background: #ffffff;
   padding: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .overview-grid,

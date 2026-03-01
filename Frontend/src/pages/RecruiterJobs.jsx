@@ -258,7 +258,6 @@ export default function RecruiterJobs() {
         )}
 
         <section className="recruiter-jobs-card">
-          <h2>Your Jobs</h2>
           {loading ? (
             <p className="muted">Loading posted jobs...</p>
           ) : jobs.length === 0 ? (

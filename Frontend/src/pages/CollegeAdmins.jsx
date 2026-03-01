@@ -1,8 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ProfileIcon from "./ProfileIcon";
 import "./CollegeAdmins.css";
 
 const API_BASE = process.env.REACT_APP_PHP_API_BASE || "http://localhost/JobNexus/Backend-PHP/api";
+const TAB_OPTIONS = [
+  { value: "overview", label: "Overview" },
+  { value: "students", label: "Students" },
+  { value: "applications", label: "Applications" },
+  { value: "recruiters", label: "Recruiters" },
+  { value: "announcements", label: "Announcements" },
+  { value: "reports", label: "Reports" },
+  { value: "audit", label: "Audit" }
+];
 
 function toCsv(rows) {
   if (!rows || rows.length === 0) return "";
@@ -262,25 +272,27 @@ export default function CollegeAdmins() {
   return (
     <div className="college-admin-page">
       <header className="college-admin-header">
-        <div>
-          <h1>College Admin Dashboard</h1>
+        <div className="college-admin-header-copy">
+          <h1 className="dashboard-banner-title">College Admin Dashboard</h1>
           <p>Placement operations, student pipeline, recruiter coordination</p>
         </div>
         <div className="college-admin-header-actions">
-          <button className="college-btn" onClick={() => navigate("/profile")}>Profile</button>
+          <select
+            className="college-tab-select"
+            value={tab}
+            onChange={(e) => setTab(e.target.value)}
+            aria-label="Select dashboard section"
+          >
+            {TAB_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <ProfileIcon />
           <button className="college-btn college-btn-danger" onClick={handleLogout}>Logout</button>
         </div>
       </header>
-
-      <nav className="college-admin-tabs">
-        <button className={tab === "overview" ? "active" : ""} onClick={() => setTab("overview")}>Overview</button>
-        <button className={tab === "students" ? "active" : ""} onClick={() => setTab("students")}>Students</button>
-        <button className={tab === "applications" ? "active" : ""} onClick={() => setTab("applications")}>Applications</button>
-        <button className={tab === "recruiters" ? "active" : ""} onClick={() => setTab("recruiters")}>Recruiters</button>
-        <button className={tab === "announcements" ? "active" : ""} onClick={() => setTab("announcements")}>Announcements</button>
-        <button className={tab === "reports" ? "active" : ""} onClick={() => setTab("reports")}>Reports</button>
-        <button className={tab === "audit" ? "active" : ""} onClick={() => setTab("audit")}>Audit</button>
-      </nav>
 
       {loading && <div className="college-admin-card">Loading dashboard data...</div>}
 

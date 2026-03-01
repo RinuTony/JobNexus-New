@@ -1,29 +1,48 @@
 /* Header */
 .dashboard-header {
-  background: linear-gradient(135deg, #000000, #4A70A9);
-  color: white;
-  padding: 2rem;
-  text-align: center;
-  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
-.dashboard-header h1 {
+.dashboard-header-copy {
+  flex: 1;
+}
+
+.dashboard-banner-title {
   margin: 0;
-  font-size: 2.5rem;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #0f3d75;
 }
 
-.dashboard-header p {
-  margin-top: 0.5rem;
-  opacity: 0.9;
-  font-size: 1.1rem;
+.dashboard-banner-subtitle {
+  margin: 0.35rem 0 0 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.dashboard-header-actions-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 /* Dashboard Actions/Tabs */
 .dashboard-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 0;
   flex-wrap: wrap;
 }
 
@@ -64,9 +83,13 @@
 
 .top-row {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: 2rem;
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.top-row > .card {
+  height: 100%;
 }
 
 .ranking-view {
@@ -114,8 +137,7 @@
 }
 
 .post-job-card {
-  height: fit-content;
-  align-self: start;
+  align-self: stretch;
 }
 
 .ranking-card {
@@ -1237,7 +1259,7 @@
     padding: 1.5rem 1rem;
   }
   
-  .dashboard-header h1 {
+  .dashboard-banner-title {
     font-size: 2rem;
   }
   
@@ -1292,6 +1314,7 @@
   .filters-row {
     grid-template-columns: 1fr;
   }
+
 }
 
 @media (max-width: 480px) {
@@ -1321,5 +1344,5 @@
 }
 
 .candidates-top-row {
-  grid-template-columns: 0.8fr 2.2fr 0.8fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }

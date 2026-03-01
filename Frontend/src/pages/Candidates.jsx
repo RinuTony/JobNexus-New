@@ -751,27 +751,14 @@ export default function Candidates() {
 
   return (
     <>
-      <header
-        className="dashboard-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem 2rem",
-          background: "white",
-          borderBottom: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: "1.5rem", color: "#1f2937" }}>
-            Candidate Dashboard
-          </h1>
-          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.875rem", color: "#6b7280" }}>
+      <header className="dashboard-header">
+        <div className="dashboard-header-copy">
+          <h1 className="dashboard-banner-title">Candidate Dashboard</h1>
+          <p className="dashboard-banner-subtitle">
             Find and apply to your dream job
           </p>
         </div>
-        <div className="dashboard-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", position: "relative" }}>
+        <div className="dashboard-header-actions-row" style={{ position: "relative" }}>
           <div ref={notificationsMenuRef} style={{ position: "relative" }}>
             <button
               type="button"
