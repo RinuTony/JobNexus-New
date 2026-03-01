@@ -25,6 +25,19 @@ function ensureRecruiterFeedbackColumn(PDO $db): void {
     }
 }
 
+function ensureFlexibleApplicationStatusColumn(PDO $db): void {
+    $stmt = $db->query("SHOW COLUMNS FROM applications LIKE 'status'");
+    $column = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+    if (!$column) {
+        return;
+    }
+
+    $type = strtolower((string)($column['Type'] ?? ''));
+    if (strpos($type, 'enum(') !== false) {
+        $db->exec("ALTER TABLE applications MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'pending'");
+    }
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 $application_id = $input['application_id'] ?? null;
@@ -72,6 +85,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     ensureRecruiterFeedbackColumn($db);
+    ensureFlexibleApplicationStatusColumn($db);
 
     // Verify recruiter owns this application
     $checkQuery = "
@@ -83,8 +97,9 @@ try {
     
     $checkStmt = $db->prepare($checkQuery);
     $checkStmt->execute([$application_id, $recruiter_id]);
-    
-    if ($checkStmt->rowCount() === 0) {
+    $authorizedApplication = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$authorizedApplication) {
         http_response_code(403);
         echo json_encode([
             "success" => false,
@@ -140,7 +155,9 @@ try {
 
     echo json_encode([
         "success" => true,
-        "message" => "Application status updated successfully"
+        "message" => "Application status updated successfully",
+        "application_id" => (int)$application_id,
+        "status" => $status
     ]);
 
 } catch (Exception $e) {

@@ -256,7 +256,8 @@ export default function Candidates() {
     if (!user?.id) return;
     try {
       const response = await fetch(
-        `http://localhost/JobNexus/Backend-PHP/api/get-applied-jobs.php?candidate_id=${user.id}`
+        `http://localhost/JobNexus/Backend-PHP/api/get-applied-jobs.php?candidate_id=${user.id}&_=${Date.now()}`,
+        { cache: "no-store" }
       );
       const data = await response.json();
       if (data.success) {
@@ -389,6 +390,15 @@ export default function Candidates() {
       fetchNotifications();
     }
   }, [user?.id, fetchUserResumes, fetchAppliedJobs, fetchBuilderResumes, fetchNotifications]);
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const intervalId = setInterval(() => {
+      fetchAppliedJobs();
+      fetchNotifications();
+    }, 15000);
+    return () => clearInterval(intervalId);
+  }, [user?.id, fetchAppliedJobs, fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

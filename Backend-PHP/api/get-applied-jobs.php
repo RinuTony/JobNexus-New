@@ -22,9 +22,20 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $query = "SELECT job_id, applied_at, status FROM applications WHERE candidate_id = ?";
+    $query = "
+        SELECT a.id AS application_id, a.job_id, a.applied_at, a.status
+        FROM applications a
+        INNER JOIN (
+            SELECT job_id, MAX(id) AS latest_application_id
+            FROM applications
+            WHERE candidate_id = ?
+            GROUP BY job_id
+        ) latest ON latest.latest_application_id = a.id
+        WHERE a.candidate_id = ?
+        ORDER BY a.applied_at DESC, a.id DESC
+    ";
     $stmt = $db->prepare($query);
-    $stmt->execute([$candidate_id]);
+    $stmt->execute([$candidate_id, $candidate_id]);
 
     $applications = $stmt->fetchAll();
 
