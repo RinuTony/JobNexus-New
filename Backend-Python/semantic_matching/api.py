@@ -20,6 +20,7 @@ from core.course_catalog_sync import sync_catalog
 import os
 from core.reasoning_helper import ReasoningHelper
 from core.tailor_helper import TailorHelper
+from core.career_recommender import CareerRecommender
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -46,6 +47,14 @@ try:
 except Exception as e:
     print(f"Warning: TailorHelper initialization failed: {str(e)}")
     tailor_helper = None
+
+# Initialize career recommender with error handling
+try:
+    career_recommender = CareerRecommender()
+    print("CareerRecommender initialized successfully")
+except Exception as e:
+    print(f"Warning: CareerRecommender initialization failed: {str(e)}")
+    career_recommender = None
 
 # CORS
 app.add_middleware(
@@ -144,6 +153,13 @@ class InterviewStopRequest(BaseModel):
 class InterviewResumeRequest(BaseModel):
     candidate_id: str
     job_id: str
+
+
+class CareerRecommendationRequest(BaseModel):
+    candidate_id: str
+    resume_type: str = "latest"
+    resume_id: Optional[str] = None
+    resume_filename: Optional[str] = None
 
 
 def _merge_resume_data(base: dict, updates: Optional[dict]) -> dict:
@@ -692,6 +708,37 @@ async def get_job_details(job_id: str):
             "success": True,
             "job": job_details
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/career-recommendation")
+async def get_career_recommendation(request: CareerRecommendationRequest):
+    if not career_recommender:
+        raise HTTPException(status_code=503, detail="Career recommendation model is not available")
+
+    try:
+        resume_text = _get_resume_text_for_candidate_selected(
+            candidate_id=request.candidate_id,
+            resume_type=request.resume_type,
+            resume_id=request.resume_id,
+            resume_filename=request.resume_filename
+        )
+
+        if not resume_text:
+            raise HTTPException(status_code=404, detail="No resume content found for candidate")
+
+        recommendation = career_recommender.recommend_from_resume_text(resume_text)
+
+        return {
+            "success": True,
+            "resume_type_used": request.resume_type,
+            **recommendation
+        }
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

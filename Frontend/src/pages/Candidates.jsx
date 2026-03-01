@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, X, BarChart3, MessageSquare, Sparkles, Wand2, BookOpen, Youtube, Globe, Award, ExternalLink } from "lucide-react";
+import { Upload, FileText, X, BarChart3, MessageSquare, Sparkles, Wand2, BookOpen, Youtube, Globe, Award, ExternalLink, Bell } from "lucide-react";
 import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
@@ -30,8 +30,14 @@ export default function Candidates() {
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState("");
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  const [careerRecoLoading, setCareerRecoLoading] = useState(false);
+  const [careerRecoError, setCareerRecoError] = useState("");
+  const [careerRecoData, setCareerRecoData] = useState(null);
+  const [careerResumeSelection, setCareerResumeSelection] = useState("auto");
   const [selectedJobFilter, setSelectedJobFilter] = useState("all");
   const [expandedJobDescriptions, setExpandedJobDescriptions] = useState({});
+  const notificationsMenuRef = useRef(null);
   
   const [selectedResumeByJob, setSelectedResumeByJob] = useState({});
 
@@ -283,6 +289,57 @@ export default function Candidates() {
     }
   }, [user?.id]);
 
+  const fetchCareerRecommendation = async () => {
+    if (!user?.id) return;
+
+    setCareerRecoLoading(true);
+    setCareerRecoError("");
+    setCareerRecoData(null);
+
+    try {
+      const latestUploaded = getLatestUploadedResume();
+      const latestBuilder = getLatestBuilderResume();
+
+      const payload = { candidate_id: String(user.id), resume_type: "latest" };
+      if (careerResumeSelection === "auto") {
+        if (latestUploaded?.resume_filename) {
+          payload.resume_type = "uploaded";
+          payload.resume_filename = latestUploaded.resume_filename;
+        } else if (latestBuilder?.id) {
+          payload.resume_type = "builder";
+          payload.resume_id = String(latestBuilder.id);
+        }
+      } else {
+        const [source, value] = careerResumeSelection.split(":");
+        if (source === "uploaded" && value) {
+          payload.resume_type = "uploaded";
+          payload.resume_filename = value;
+        } else if (source === "builder" && value) {
+          payload.resume_type = "builder";
+          payload.resume_id = value;
+        }
+      }
+
+      const response = await fetch("http://localhost:8000/api/career-recommendation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.detail || data.message || "Failed to generate career recommendation");
+      }
+
+      setCareerRecoData(data);
+    } catch (err) {
+      console.error(err);
+      setCareerRecoError(err.message || "Failed to generate career recommendation");
+    } finally {
+      setCareerRecoLoading(false);
+    }
+  };
+
   const markNotificationRead = async (notificationId) => {
     if (!user?.id) return;
     try {
@@ -332,6 +389,17 @@ export default function Candidates() {
       fetchNotifications();
     }
   }, [user?.id, fetchUserResumes, fetchAppliedJobs, fetchBuilderResumes, fetchNotifications]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
+        setShowNotificationsMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Open Upload Modal
   const openUploadModal = (job) => {
@@ -693,7 +761,122 @@ export default function Candidates() {
             Find and apply to your dream job
           </p>
         </div>
-        <div className="dashboard-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <div className="dashboard-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", position: "relative" }}>
+          <div ref={notificationsMenuRef} style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowNotificationsMenu((prev) => !prev)}
+              style={{
+                position: "relative",
+                width: "40px",
+                height: "40px",
+                borderRadius: "999px",
+                border: "1px solid #d1d5db",
+                backgroundColor: "white",
+                color: "#374151",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer"
+              }}
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: "-3px",
+                  right: "-3px",
+                  minWidth: "16px",
+                  height: "16px",
+                  borderRadius: "999px",
+                  backgroundColor: "#4A70A9",
+                  color: "white",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 4px"
+                }}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotificationsMenu && (
+              <div style={{
+                position: "absolute",
+                top: "46px",
+                right: 0,
+                width: "340px",
+                maxHeight: "420px",
+                overflowY: "auto",
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                zIndex: 60,
+                padding: "10px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#1f2937" }}>Notifications</div>
+                  <div style={{ fontSize: "11px", color: "#6b7280" }}>{unreadCount} unread</div>
+                </div>
+
+                {notificationsLoading && (
+                  <div style={{ color: "#6b7280", fontSize: "13px", padding: "8px 4px" }}>
+                    Loading notifications...
+                  </div>
+                )}
+                {!notificationsLoading && notificationsError && (
+                  <div style={{ color: "#b91c1c", fontSize: "13px", padding: "8px 4px" }}>
+                    {notificationsError}
+                  </div>
+                )}
+                {!notificationsLoading && !notificationsError && notifications.length === 0 && (
+                  <div style={{ color: "#6b7280", fontSize: "13px", padding: "8px 4px" }}>
+                    No notifications yet.
+                  </div>
+                )}
+                {!notificationsLoading && !notificationsError && notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      padding: "10px",
+                      marginBottom: "8px",
+                      backgroundColor: n.is_read ? "#f9fafb" : "#eef2ff"
+                    }}
+                  >
+                    <div style={{ fontSize: "13px", color: "#1f2937", fontWeight: 500 }}>
+                      {n.message || `Your application status was ${humanizeNotificationStatus(n.status)}.`}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>
+                      {formatNotificationTime(n.created_at)}
+                    </div>
+                    {!n.is_read && (
+                      <button
+                        onClick={() => markNotificationRead(n.id)}
+                        style={{
+                          marginTop: "6px",
+                          fontSize: "11px",
+                          background: "transparent",
+                          border: "none",
+                          color: "#4A70A9",
+                          cursor: "pointer",
+                          padding: 0
+                        }}
+                      >
+                        Mark as read
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <ProfileIcon />
         </div>
       </header>
@@ -704,9 +887,13 @@ export default function Candidates() {
           <div className="card" style={{ 
             height: "calc(100vh - 180px)",
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            boxSizing: "border-box",
+            overflowY: "auto",
+            overflowX: "hidden",
+            minHeight: 0
           }}>
-            <div style={{ marginBottom: "20px" }}>
+            <div style={{ marginBottom: "12px" }}>
               <h2 style={{ 
                 fontSize: "20px", 
                 fontWeight: "500", 
@@ -1329,94 +1516,173 @@ export default function Candidates() {
             </div>
           </div>
 
-          {/* COLUMN 3: Notifications */}
+          {/* COLUMN 3: Career Recommendation */}
           <div className="card" style={{ 
             height: "calc(100vh - 180px)",
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            minHeight: 0
           }}>
-            <div style={{ marginBottom: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <h2 style={{ 
-                  fontSize: "18px", 
-                  fontWeight: "600", 
-                  color: "#1f2937",
-                  margin: 0
-                }}>
-                  Notifications
-                </h2>
-                <span style={{
-                  backgroundColor: unreadCount > 0 ? "#4A70A9" : "#e5e7eb",
-                  color: unreadCount > 0 ? "white" : "#6b7280",
-                  fontSize: "12px",
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                <h2 style={{
+                  fontSize: "18px",
                   fontWeight: "600",
-                  borderRadius: "999px",
-                  padding: "4px 10px"
+                  color: "#1f2937",
+                  margin: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
                 }}>
-                  {unreadCount} unread
-                </span>
+                  <Sparkles size={18} />
+                  Career Recommendation
+                </h2>
+                <button
+                  onClick={fetchCareerRecommendation}
+                  disabled={careerRecoLoading}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    border: "1px solid #8FABD4",
+                    backgroundColor: careerRecoLoading ? "#e5e7eb" : "#EFECE3",
+                    color: "#4A70A9",
+                    cursor: careerRecoLoading ? "not-allowed" : "pointer",
+                    fontSize: "12px",
+                    fontWeight: "600"
+                  }}
+                >
+                  {careerRecoLoading ? "Analyzing..." : "Analyze Resume"}
+                </button>
+              </div>
+
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", fontSize: "12px", color: "#4b5563", marginBottom: "6px", fontWeight: "600" }}>
+                  Resume source
+                </label>
+                <select
+                  value={careerResumeSelection}
+                  onChange={(e) => setCareerResumeSelection(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    borderRadius: "8px",
+                    border: "1px solid #d1d5db",
+                    fontSize: "12px",
+                    backgroundColor: "white",
+                    color: "#111827"
+                  }}
+                >
+                  <option value="auto">Auto (latest uploaded, else latest builder)</option>
+                  {userResumes.map((resume, index) => (
+                    <option key={`career-uploaded-${index}`} value={`uploaded:${resume.resume_filename}`}>
+                      Uploaded: {getUploadedResumeLabel(resume)}
+                    </option>
+                  ))}
+                  {visibleBuilderResumes.map((resume) => (
+                    <option key={`career-builder-${resume.id}`} value={`builder:${resume.id}`}>
+                      Builder: {resume.title || "Resume Builder Resume"}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{
-                marginTop: "12px",
-                maxHeight: "200px",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                paddingRight: "6px"
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                backgroundColor: "#f9fafb",
+                padding: "12px",
+                paddingRight: "8px",
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto"
               }}>
-                {notificationsLoading && (
-                  <div style={{ color: "#6b7280", fontSize: "14px" }}>
-                    Loading notifications...
-                  </div>
+                {!careerRecoLoading && !careerRecoError && !careerRecoData && (
+                  <p style={{ margin: 0, color: "#6b7280", fontSize: "13px", lineHeight: "1.5" }}>
+                    Run AI analysis on your latest resume to get a suggested career path and skill gaps.
+                  </p>
                 )}
-                {!notificationsLoading && notificationsError && (
-                  <div style={{ color: "#b91c1c", fontSize: "14px" }}>
-                    {notificationsError}
-                  </div>
+
+                {careerRecoLoading && (
+                  <p style={{ margin: 0, color: "#6b7280", fontSize: "13px" }}>
+                    Generating recommendation...
+                  </p>
                 )}
-                {!notificationsLoading && !notificationsError && notifications.length === 0 && (
-                  <div style={{ color: "#6b7280", fontSize: "14px" }}>
-                    No notifications yet.
-                  </div>
+
+                {!careerRecoLoading && careerRecoError && (
+                  <p style={{ margin: 0, color: "#b91c1c", fontSize: "13px" }}>
+                    {careerRecoError}
+                  </p>
                 )}
-                {!notificationsLoading && !notificationsError && notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    style={{
-                      border: "1px solid #e5e7eb",
+
+                {!careerRecoLoading && !careerRecoError && careerRecoData && (
+                  <div style={{ display: "grid", gap: "10px" }}>
+                    <div style={{
+                      backgroundColor: "#ecfeff",
+                      border: "1px solid #a5f3fc",
                       borderRadius: "8px",
-                      padding: "10px",
-                      backgroundColor: n.is_read ? "#f9fafb" : "#eef2ff"
-                    }}
-                  >
-                    <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 500 }}>
-                      {n.message || `Your application status was ${humanizeNotificationStatus(n.status)}.`}
+                      padding: "10px"
+                    }}>
+                      <div style={{ fontSize: "12px", color: "#0e7490", marginBottom: "4px", fontWeight: "600" }}>
+                        Recommended Career
+                      </div>
+                      <div style={{ fontSize: "15px", color: "#164e63", fontWeight: "700" }}>
+                        {careerRecoData.recommended_career || "N/A"}
+                      </div>
                     </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
-                      {formatNotificationTime(n.created_at)}
+
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#374151", marginBottom: "6px", fontWeight: "600" }}>
+                        Top Matches
+                      </div>
+                      <div style={{ display: "grid", gap: "6px" }}>
+                        {(careerRecoData.top_matches || []).map((item, idx) => (
+                          <div key={idx} style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            backgroundColor: "white",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "6px",
+                            padding: "8px"
+                          }}>
+                            <span style={{ fontSize: "12px", color: "#111827", fontWeight: "500" }}>
+                              {item.career}
+                            </span>
+                            <span style={{ fontSize: "12px", color: "#4A70A9", fontWeight: "700" }}>
+                              {item.score_percentage}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    {!n.is_read && (
-                      <button
-                        onClick={() => markNotificationRead(n.id)}
-                        style={{
-                          marginTop: "6px",
-                          fontSize: "12px",
-                          background: "transparent",
-                          border: "none",
-                          color: "#4A70A9",
-                          cursor: "pointer",
-                          padding: 0
-                        }}
-                      >
-                        Mark as read
-                      </button>
-                    )}
+
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#374151", marginBottom: "6px", fontWeight: "600" }}>
+                        Missing Skills
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        {(careerRecoData.missing_skills || []).length > 0 ? (
+                          careerRecoData.missing_skills.map((skill, idx) => (
+                            <span key={idx} style={{
+                              fontSize: "11px",
+                              color: "#9a3412",
+                              backgroundColor: "#ffedd5",
+                              border: "1px solid #fed7aa",
+                              borderRadius: "999px",
+                              padding: "4px 8px"
+                            }}>
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span style={{ fontSize: "12px", color: "#166534" }}>
+                            No major skill gaps for this recommendation.
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
           </div>
 
         </div>

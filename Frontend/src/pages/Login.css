@@ -240,6 +240,26 @@
   cursor: not-allowed;
 }
 
+.database-admin-link-compact {
+  margin-top: 0.75rem;
+  width: 100%;
+  border: none;
+  background: none;
+  color: #4A70A9;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.database-admin-link-compact:hover {
+  color: #8FABD4;
+}
+
+.database-admin-link-compact.active {
+  font-weight: 600;
+}
+
 .spinner-compact {
   width: 18px;
   height: 18px;

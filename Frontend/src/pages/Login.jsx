@@ -140,50 +140,42 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="role-selection-compact inside-form">
-            <div className="role-tabs-compact">
-              <button
-                className={`role-tab-compact ${role === "candidate" ? "active" : ""}`}
-                onClick={() => setRole("candidate")}
-                type="button"
-              >
-                Candidate
-              </button>
-
-              <button
-                className={`role-tab-compact ${role === "recruiter" ? "active" : ""}`}
-                onClick={() => setRole("recruiter")}
-                type="button"
-              >
-                Recruiter
-              </button>
-
-              <button
-                className={`role-tab-compact ${role === "admin" ? "active" : ""}`}
-                onClick={() => setRole("admin")}
-                type="button"
-              >
-                Admin
-              </button>
-
-              {isLogin && (
+          {(!isLogin || role !== "database_admin") && (
+            <div className="role-selection-compact inside-form">
+              <div className="role-tabs-compact">
                 <button
-                  className={`role-tab-compact ${role === "database_admin" ? "active" : ""}`}
-                  onClick={() => setRole("database_admin")}
+                  className={`role-tab-compact ${role === "candidate" ? "active" : ""}`}
+                  onClick={() => setRole("candidate")}
                   type="button"
                 >
-                  Database Admin
+                  Candidate
                 </button>
-              )}
-            </div>
 
-            <div className="role-description-compact">
-              {role === "candidate" && "Find jobs, build your resume, and get AI-powered career guidance"}
-              {role === "recruiter" && "Post jobs, find candidates, and streamline your hiring process"}
-              {role === "admin" && "Manage student placements and connect with recruiters"}
-              {role === "database_admin" && "Control system operations and database-level administration"}
+                <button
+                  className={`role-tab-compact ${role === "recruiter" ? "active" : ""}`}
+                  onClick={() => setRole("recruiter")}
+                  type="button"
+                >
+                  Recruiter
+                </button>
+
+                <button
+                  className={`role-tab-compact ${role === "admin" ? "active" : ""}`}
+                  onClick={() => setRole("admin")}
+                  type="button"
+                >
+                  Admin
+                </button>
+
+              </div>
+
+              <div className="role-description-compact">
+                {role === "candidate" && "Find jobs, build your resume, and get AI-powered career guidance"}
+                {role === "recruiter" && "Post jobs, find candidates, and streamline your hiring process"}
+                {role === "admin" && "Manage student placements and connect with recruiters"}
+              </div>
             </div>
-          </div>
+          )}
 
           <form onSubmit={handleSubmit} className="form-compact">
             {!isLogin && (
@@ -270,10 +262,19 @@ export default function Login() {
                 isLogin ? "Sign In" : "Create Account"
               )}
             </button>
+
+            {isLogin && (
+              <button
+                type="button"
+                className={`database-admin-link-compact ${role === "database_admin" ? "active" : ""}`}
+                onClick={() => setRole(role === "database_admin" ? "candidate" : "database_admin")}
+              >
+                {role === "database_admin" ? "Back to regular sign in" : "Database Admin Sign In"}
+              </button>
+            )}
           </form>
         </div>
       </div>
     </div>
   );
 }
-
