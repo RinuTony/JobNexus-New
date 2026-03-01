@@ -14,11 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 
+function ensureRecruiterFeedbackColumn(PDO $db): void {
+    try {
+        $db->exec("ALTER TABLE applications ADD COLUMN recruiter_feedback TEXT NULL");
+    } catch (PDOException $e) {
+        $message = strtolower($e->getMessage());
+        if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+            throw $e;
+        }
+    }
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 $application_id = $input['application_id'] ?? null;
 $status = $input['status'] ?? null;
 $recruiter_id = $input['recruiter_id'] ?? null;
+$feedback = isset($input['feedback']) ? trim((string)$input['feedback']) : null;
+$feedback = ($feedback === '') ? null : $feedback;
+if ($feedback !== null && strlen($feedback) > 2000) {
+    $feedback = substr($feedback, 0, 2000);
+}
 
 if (!$application_id || !$status || !$recruiter_id) {
     http_response_code(400);
@@ -55,6 +71,7 @@ $status = $statusMap[$normalizedStatus];
 try {
     $database = new Database();
     $db = $database->getConnection();
+    ensureRecruiterFeedbackColumn($db);
 
     // Verify recruiter owns this application
     $checkQuery = "
@@ -76,10 +93,10 @@ try {
         exit();
     }
 
-    // Update status
-    $updateQuery = "UPDATE applications SET status = ? WHERE id = ?";
+    // Update status + optional recruiter feedback
+    $updateQuery = "UPDATE applications SET status = ?, recruiter_feedback = ? WHERE id = ?";
     $updateStmt = $db->prepare($updateQuery);
-    $updateStmt->execute([$status, $application_id]);
+    $updateStmt->execute([$status, $feedback, $application_id]);
 
     // Fetch candidate + job details for notification
     $detailsQuery = "
@@ -104,6 +121,9 @@ try {
         ];
         $statusPhrase = $statusPhraseMap[$status] ?? str_replace('_', ' ', $status);
         $message = "Your application for " . ($details['job_title'] ?? 'a job') . " has been " . $statusPhrase . ".";
+        if ($feedback !== null) {
+            $message .= " Recruiter feedback: " . $feedback;
+        }
         $insertQuery = "
             INSERT INTO notifications (user_id, application_id, job_id, status, message, is_read, created_at)
             VALUES (?, ?, ?, ?, ?, 0, NOW())

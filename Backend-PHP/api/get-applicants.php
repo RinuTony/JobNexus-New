@@ -22,6 +22,112 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
+    function ensureRecruiterFeedbackColumn(PDO $db): void {
+        try {
+            $db->exec("ALTER TABLE applications ADD COLUMN recruiter_feedback TEXT NULL");
+        } catch (PDOException $e) {
+            $message = strtolower($e->getMessage());
+            if (strpos($message, 'duplicate column') === false && strpos($message, '1060') === false) {
+                throw $e;
+            }
+        }
+    }
+
+    function normalizePortfolioUrl($raw) {
+        if (!is_string($raw)) {
+            return null;
+        }
+        $url = trim($raw);
+        if ($url === '') {
+            return null;
+        }
+        if (stripos($url, 'www.') === 0) {
+            $url = 'https://' . $url;
+        } elseif (!preg_match('#^https?://#i', $url)) {
+            $looksLikeDomain = preg_match('/^(?:[a-z0-9-]+\.)+[a-z]{2,}(?:[\/:?#].*)?$/i', $url) === 1;
+            if ($looksLikeDomain && strpos($url, '@') === false) {
+                $url = 'https://' . $url;
+            }
+        }
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+        $parts = parse_url($url);
+        $scheme = strtolower($parts['scheme'] ?? '');
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+        return $url;
+    }
+
+    function classifyPortfolioLink($url) {
+        $normalized = normalizePortfolioUrl($url);
+        if ($normalized === null) {
+            return null;
+        }
+
+        $parts = parse_url($normalized);
+        $host = strtolower($parts['host'] ?? '');
+        $path = strtolower($parts['path'] ?? '');
+        if (str_starts_with($host, 'www.')) {
+            $host = substr($host, 4);
+        }
+
+        if (str_ends_with($host, 'linkedin.com')) {
+            return ['label' => 'LinkedIn', 'url' => $normalized];
+        }
+        if (str_ends_with($host, 'github.com')) {
+            return ['label' => 'GitHub', 'url' => $normalized];
+        }
+
+        $blockedCourseDomains = [
+            'coursera.org', 'udemy.com', 'edx.org', 'classcentral.com',
+            'skillshare.com', 'udacity.com', 'pluralsight.com', 'codecademy.com',
+            'freecodecamp.org', 'geeksforgeeks.org', 'youtube.com', 'youtu.be'
+        ];
+        foreach ($blockedCourseDomains as $domain) {
+            if ($host === $domain || str_ends_with($host, '.' . $domain)) {
+                return null;
+            }
+        }
+
+        $blockedPathTokens = ['/course', '/courses', '/learn', '/learning', '/tutorial', '/tutorials', '/certificate', '/certification', '/bootcamp'];
+        foreach ($blockedPathTokens as $token) {
+            if ($path !== '' && strpos($path, $token) !== false) {
+                return null;
+            }
+        }
+
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        $blocked = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'txt', 'zip', 'rar', '7z', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if ($ext && in_array($ext, $blocked, true)) {
+            return null;
+        }
+
+        return ['label' => 'Website', 'url' => $normalized];
+    }
+
+    function filterPortfolioLinks($links) {
+        $filtered = [];
+        $seen = [];
+        foreach ($links as $link) {
+            if (!is_array($link) || empty($link['url'])) {
+                continue;
+            }
+            $classified = classifyPortfolioLink($link['url']);
+            if ($classified === null) {
+                continue;
+            }
+            $key = strtolower($classified['url']);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $filtered[] = $classified;
+        }
+        return $filtered;
+    }
+
     function fetchPdfLinks($filename) {
         if (empty($filename)) {
             return [];
@@ -48,13 +154,16 @@ try {
             return [];
         }
 
-        return $data['links'] ?? [];
+        return filterPortfolioLinks($data['links'] ?? []);
     }
+
+    ensureRecruiterFeedbackColumn($db);
 
     $sql = "
     SELECT 
         a.id AS application_id,
         a.status,
+        a.recruiter_feedback,
         a.applied_at,
         a.resume_filename,  
         j.title AS job_title,
@@ -92,15 +201,11 @@ try {
                 $portfolio = $personalInfo['portfolio'] ?? '';
                 $website = $personalInfo['website'] ?? '';
 
-                if (!empty($linkedIn)) {
-                    $links[] = ['label' => 'LinkedIn', 'url' => $linkedIn];
-                }
-                if (!empty($portfolio)) {
-                    $links[] = ['label' => 'Portfolio', 'url' => $portfolio];
-                }
-                if (!empty($website)) {
-                    $links[] = ['label' => 'Website', 'url' => $website];
-                }
+                $links = filterPortfolioLinks([
+                    ['url' => $linkedIn],
+                    ['url' => $portfolio],
+                    ['url' => $website]
+                ]);
             }
         }
 

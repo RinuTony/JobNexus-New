@@ -4,6 +4,7 @@ import fitz  # PyMuPDF package
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -14,6 +15,82 @@ MAX_TEXT_LENGTH = 10000
 UPLOADS_DIR = os.getenv("PHP_UPLOADS_DIR", r"C:\xampp\htdocs\JobNexus\Backend-PHP\uploads")
 
 URL_PATTERN = re.compile(r'(https?://[^\s<>"\]\)]+|www\.[^\s<>"\]\)]+)', re.IGNORECASE)
+BLOCKED_FILE_EXTENSIONS = {
+    ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".txt",
+    ".zip", ".rar", ".7z", ".png", ".jpg", ".jpeg", ".gif", ".webp"
+}
+BLOCKED_COURSE_DOMAINS = {
+    "coursera.org",
+    "udemy.com",
+    "edx.org",
+    "classcentral.com",
+    "skillshare.com",
+    "udacity.com",
+    "pluralsight.com",
+    "codecademy.com",
+    "freecodecamp.org",
+    "geeksforgeeks.org",
+    "youtube.com",
+    "youtu.be",
+}
+BLOCKED_COURSE_PATH_TOKENS = (
+    "/course",
+    "/courses",
+    "/learn",
+    "/learning",
+    "/tutorial",
+    "/tutorials",
+    "/certificate",
+    "/certification",
+    "/bootcamp",
+)
+DOMAIN_LIKE_RE = re.compile(r"^(?:[a-z0-9-]+\.)+[a-z]{2,}(?:[/:?#][^\s]*)?$", re.IGNORECASE)
+
+
+def looks_like_domain_url(value):
+    if not value:
+        return False
+    token = value.strip()
+    if "@" in token:
+        return False
+    return DOMAIN_LIKE_RE.match(token) is not None
+
+
+def normalize_and_classify_url(raw_url):
+    if not raw_url:
+        return None
+
+    url = raw_url.strip().rstrip(".,;)")
+    if url.lower().startswith("www."):
+        url = "https://" + url
+    elif "://" not in url and looks_like_domain_url(url):
+        url = "https://" + url
+
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return None
+
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+
+    if host.endswith("linkedin.com"):
+        return {"label": "LinkedIn", "url": url}
+    if host.endswith("github.com"):
+        return {"label": "GitHub", "url": url}
+
+    for blocked_domain in BLOCKED_COURSE_DOMAINS:
+        if host == blocked_domain or host.endswith("." + blocked_domain):
+            return None
+
+    path = (parsed.path or "").lower().strip()
+    if any(token in path for token in BLOCKED_COURSE_PATH_TOKENS):
+        return None
+    _, ext = os.path.splitext(path)
+    if ext in BLOCKED_FILE_EXTENSIONS:
+        return None
+
+    return {"label": "Website", "url": url}
 
 
 def extract_text_from_pdf_path(file_path):
@@ -35,16 +112,14 @@ def extract_links_from_annotations(file_path):
                 uri = link.get("uri")
                 if not uri:
                     continue
-                if uri in seen:
+                normalized = normalize_and_classify_url(uri)
+                if not normalized:
                     continue
-                seen.add(uri)
-                label = "Website"
-                lower = uri.lower()
-                if "linkedin.com" in lower:
-                    label = "LinkedIn"
-                elif "github.com" in lower:
-                    label = "GitHub"
-                links.append({"label": label, "url": uri})
+                key = normalized["url"].lower()
+                if key in seen:
+                    continue
+                seen.add(key)
+                links.append(normalized)
         doc.close()
         return links
     except Exception:
@@ -55,29 +130,26 @@ def extract_links_from_text(text):
         return []
 
     matches = URL_PATTERN.findall(text)
-    if not matches:
+    candidates = set(matches)
+    for token in re.split(r"\s+", text):
+        cleaned = token.strip().strip("()[]{}<>,;\"'")
+        if cleaned:
+            candidates.add(cleaned)
+    if not candidates:
         return []
 
     seen = set()
     links = []
 
-    for raw in matches:
-        url = raw.strip().rstrip(".,;)")
-        if url.lower().startswith("www."):
-            url = "https://" + url
-
-        if url in seen:
+    for raw in candidates:
+        normalized = normalize_and_classify_url(raw)
+        if not normalized:
             continue
-        seen.add(url)
-
-        label = "Website"
-        lower = url.lower()
-        if "linkedin.com" in lower:
-            label = "LinkedIn"
-        elif "github.com" in lower:
-            label = "GitHub"
-
-        links.append({"label": label, "url": url})
+        key = normalized["url"].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        links.append(normalized)
 
     return links
 

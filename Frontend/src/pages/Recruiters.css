@@ -407,6 +407,30 @@
   flex-wrap: wrap;
 }
 
+.feedback-row {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.feedback-textarea {
+  width: 100%;
+  border: 1px solid #8FABD4;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.92rem;
+  resize: vertical;
+  min-height: 72px;
+  background: #ffffff;
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: #4A70A9;
+  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+}
+
 .contact-row {
   margin-top: 0.8rem;
   display: flex;

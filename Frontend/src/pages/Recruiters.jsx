@@ -46,6 +46,8 @@ export default function Recruiters() {
   const [selectedResume, setSelectedResume] = useState(null);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
   const [statusUpdates, setStatusUpdates] = useState({});
+  const [feedbackUpdates, setFeedbackUpdates] = useState({});
+  const [statusSaving, setStatusSaving] = useState({});
 
   const [selectedJobForRanking, setSelectedJobForRanking] = useState("");
   const [rankings, setRankings] = useState([]);
@@ -82,10 +84,13 @@ export default function Recruiters() {
       if (data.success) {
         setApplications(data.applications || []);
         const initialStatuses = {};
+        const initialFeedback = {};
         data.applications?.forEach((app) => {
           initialStatuses[app.application_id] = normalizeStatus(app.status);
+          initialFeedback[app.application_id] = app.recruiter_feedback || "";
         });
         setStatusUpdates(initialStatuses);
+        setFeedbackUpdates(initialFeedback);
       } else {
         setApplicationsError(data.message || "Failed to load applications");
       }
@@ -199,37 +204,68 @@ export default function Recruiters() {
     setSelectedResume(null);
   };
 
-  // Update application status
-  const handleStatusChange = async (applicationId, newStatus) => {
+  // Update local selected status
+  const handleStatusChange = (applicationId, newStatus) => {
     setStatusUpdates((prev) => ({
       ...prev,
       [applicationId]: normalizeStatus(newStatus),
     }));
+  };
 
+  const handleFeedbackChange = (applicationId, feedbackText) => {
+    setFeedbackUpdates((prev) => ({
+      ...prev,
+      [applicationId]: feedbackText,
+    }));
+  };
+
+  // Save status + optional recruiter feedback
+  const handleSaveStatus = async (application) => {
+    const applicationId = application.application_id;
+    const selectedStatus = normalizeStatus(
+      statusUpdates[applicationId] || application.status || "pending"
+    );
+    const feedback = (feedbackUpdates[applicationId] || "").trim();
+
+    setStatusSaving((prev) => ({ ...prev, [applicationId]: true }));
     try {
       const response = await fetch(`${API_BASE}/update-application-status.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           application_id: applicationId,
-          status: normalizeStatus(newStatus),
+          status: selectedStatus,
           recruiter_id: user.id,
+          feedback,
         }),
       });
 
       const data = await response.json();
       if (!data.success) {
-        alert("Failed to update status");
-        setStatusUpdates((prev) => ({
-          ...prev,
-          [applicationId]: normalizeStatus(
-            applications.find((app) => app.application_id === applicationId)?.status
-          ),
-        }));
+        alert(data.message || "Failed to update status");
+        return;
       }
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.application_id === applicationId
+            ? {
+                ...app,
+                status: selectedStatus,
+                recruiter_feedback: feedback,
+              }
+            : app
+        )
+      );
+      setFeedbackUpdates((prev) => ({
+        ...prev,
+        [applicationId]: "",
+      }));
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status");
+    } finally {
+      setStatusSaving((prev) => ({ ...prev, [applicationId]: false }));
     }
   };
 
@@ -805,6 +841,27 @@ export default function Recruiters() {
                               </option>
                             ))}
                           </select>
+                          <button
+                            type="button"
+                            className="btn primary"
+                            disabled={!!statusSaving[app.application_id]}
+                            onClick={() => handleSaveStatus(app)}
+                          >
+                            {statusSaving[app.application_id] ? "Saving..." : "Save Status"}
+                          </button>
+                        </div>
+                        <div className="feedback-row">
+                          <label htmlFor={`feedback-${app.application_id}`}>
+                            <strong>Feedback (optional):</strong>
+                          </label>
+                          <textarea
+                            id={`feedback-${app.application_id}`}
+                            className="feedback-textarea"
+                            rows="3"
+                            placeholder="Share optional feedback for this status update..."
+                            value={feedbackUpdates[app.application_id] ?? app.recruiter_feedback ?? ""}
+                            onChange={(e) => handleFeedbackChange(app.application_id, e.target.value)}
+                          />
                         </div>
                         <div className="contact-row">
                           <button
