@@ -5,6 +5,15 @@
 /.pnp
 .pnp.js
 
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# PyTorch / ML
+*.pt
+*.pth
+
 # testing
 /coverage
 
