@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { ENABLE_COLLEGE_ADMIN } from "../config/featureFlags";
 
 // Updated Candidates Component with Match Score Navigation
 export function Candidates() {
@@ -17,7 +18,9 @@ export function Candidates() {
         <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="cursor-pointer hover:text-indigo-600">Home</a>
         <a href="/candidates" onClick={(e) => { e.preventDefault(); navigate("/candidates"); }} className="cursor-pointer hover:text-indigo-600">Candidates</a>
         <a href="/recruiters" onClick={(e) => { e.preventDefault(); navigate("/recruiters"); }} className="cursor-pointer hover:text-indigo-600">Recruiters</a>
-        <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }} className="cursor-pointer hover:text-indigo-600">College Admins</a>
+        {ENABLE_COLLEGE_ADMIN && (
+          <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }} className="cursor-pointer hover:text-indigo-600">College Admins</a>
+        )}
         <a href="/jobs" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }} className="cursor-pointer hover:text-indigo-600">Jobs</a>
         <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }} className="cursor-pointer hover:text-indigo-600">Login</a>
       </nav>

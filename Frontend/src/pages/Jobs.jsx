@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { ENABLE_COLLEGE_ADMIN } from "../config/featureFlags";
 
 export default function Jobs() {
   const navigate = useNavigate();
@@ -11,7 +12,9 @@ export default function Jobs() {
         <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Home</a>
         <a href="/candidates" onClick={(e) => { e.preventDefault(); navigate("/candidates"); }}>Candidates</a>
         <a href="/recruiters" onClick={(e) => { e.preventDefault(); navigate("/recruiters"); }}>Recruiters</a>
-        <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }}>College Admins</a>
+        {ENABLE_COLLEGE_ADMIN && (
+          <a href="/collegeadmins" onClick={(e) => { e.preventDefault(); navigate("/collegeadmins"); }}>College Admins</a>
+        )}
         <a href="/jobs" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }}>Jobs</a>
         <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>Login</a>
       </nav>

@@ -5,8 +5,8 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 2rem;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: #2F4F79 !important;
+  border-bottom: 1px solid #2F4F79;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -22,12 +22,12 @@
   font-size: 2rem;
   font-weight: 800;
   line-height: 1.1;
-  color: #0f3d75;
+  color: #ffffff;
 }
 
 .dashboard-banner-subtitle {
   margin: 0.35rem 0 0 0;
-  color: #4b5563;
+  color: #ffffff;
   font-size: 0.95rem;
 }
 
@@ -65,9 +65,9 @@
 }
 
 .tab-btn.active {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #000000;
-  border-color: #EFECE3;
+  border-color: #FFFFFF;
   box-shadow: 0 4px 12px rgba(239, 236, 227, 0.3);
 }
 
@@ -86,6 +86,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
   align-items: stretch;
+}
+
+.recruiter-top-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .top-row > .card {
@@ -113,8 +117,9 @@
 
 .card h2 {
   margin-top: 0;
+  font-size: 20px;
   color: #000000;
-  border-bottom: 2px solid #8FABD4;
+  border-bottom: 2px solid #4A70A9;
   padding-bottom: 0.8rem;
   margin-bottom: 1.5rem;
 }
@@ -143,6 +148,11 @@
 .ranking-card {
   max-width: 900px;
   margin: 0 auto;
+}
+
+.recruiter-ranking-card {
+  max-width: none;
+  margin: 0;
 }
 
 .inline-ranking {
@@ -187,7 +197,7 @@
   margin-top: 0.5rem;
   padding: 0.8rem;
   border-radius: 10px;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
   resize: none;
 }
 
@@ -229,18 +239,18 @@
 }
 
 .btn.primary:hover {
-  background: #8FABD4;
+  background: #4A70A9;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(74, 112, 169, 0.3);
 }
 
 .btn.secondary {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #4A70A9;
 }
 
 .btn.secondary:hover {
-  background: #8FABD4;
+  background: #4A70A9;
   color: white;
   transform: translateY(-2px);
 }
@@ -277,12 +287,12 @@
 }
 
 .btn-view:hover {
-  background: #8FABD4;
+  background: #4A70A9;
   transform: translateY(-2px);
 }
 
 .btn-download {
-  background: #8FABD4;
+  background: #4A70A9;
   color: white;
 }
 
@@ -293,11 +303,11 @@
 
 /* Application cards */
 .application-card {
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
   padding: 1.2rem;
   margin-bottom: 1rem;
   border-radius: 12px;
-  background: #EFECE3;
+  background: #FFFFFF;
   transition: transform 0.2s ease;
 }
 
@@ -331,7 +341,7 @@
 }
 
 .status-pending {
-  background: #8FABD4;
+  background: #4A70A9;
   color: white;
 }
 
@@ -361,9 +371,9 @@
 }
 
 .status-rejected {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #000000;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
 }
 
 .application-details {
@@ -378,13 +388,13 @@
 .resume-section {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px dashed #8FABD4;
+  border-top: 1px dashed #4A70A9;
 }
 
 .portfolio-section {
   margin-top: 0.8rem;
   padding-top: 0.8rem;
-  border-top: 1px dashed #8FABD4;
+  border-top: 1px dashed #4A70A9;
 }
 
 .portfolio-links {
@@ -408,7 +418,7 @@
 }
 
 .portfolio-link:hover {
-  background: #8FABD4;
+  background: #4A70A9;
   transform: translateY(-1px);
 }
 
@@ -438,7 +448,7 @@
 
 .feedback-textarea {
   width: 100%;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   font-size: 0.92rem;
@@ -511,7 +521,7 @@
 .status-selector {
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
   background: white;
   font-size: 0.9rem;
   margin-top: 0.5rem;
@@ -599,7 +609,7 @@
 }
 
 .no-resume {
-  color: #8FABD4;
+  color: #4A70A9;
   font-style: italic;
 }
 
@@ -736,7 +746,7 @@
 .status-filter-select {
   width: 100%;
   padding: 0.8rem;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
   border-radius: 10px;
   font-size: 1rem;
   background: white;
@@ -757,8 +767,8 @@
 }
 
 .toolbar-metric {
-  background: #EFECE3;
-  border: 1px solid #8FABD4;
+  background: #FFFFFF;
+  border: 1px solid #4A70A9;
   border-radius: 10px;
   padding: 0.8rem 1rem;
   text-align: center;
@@ -785,8 +795,8 @@
 }
 
 .status-empty {
-  background: #EFECE3;
-  border: 1px dashed #8FABD4;
+  background: #FFFFFF;
+  border: 1px dashed #4A70A9;
   padding: 0.8rem;
   border-radius: 8px;
   color: #4A70A9;
@@ -800,11 +810,11 @@
 }
 
 .applications-error {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #000000;
   padding: 1rem;
   border-radius: 8px;
-  border-left: 4px solid #8FABD4;
+  border-left: 4px solid #4A70A9;
   margin-bottom: 1rem;
 }
 
@@ -819,8 +829,8 @@
   padding: 1.5rem;
   color: #4A70A9;
   margin-top: 3rem;
-  border-top: 1px solid #8FABD4;
-  background: #EFECE3;
+  border-top: 1px solid #4A70A9;
+  background: #FFFFFF;
 }
 
 /* Ranking View Styles */
@@ -833,10 +843,10 @@
 
 .ranking-section {
   margin-bottom: 2rem;
-  background: #EFECE3;
+  background: #FFFFFF;
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
 }
 
 .ranking-label {
@@ -850,7 +860,7 @@
 .job-selector {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
   border-radius: 10px;
   font-size: 1rem;
   background: white;
@@ -886,12 +896,12 @@
 }
 
 .ranking-error {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #000000;
   padding: 1rem;
   border-radius: 8px;
   margin-top: 1rem;
-  border-left: 4px solid #8FABD4;
+  border-left: 4px solid #4A70A9;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -904,7 +914,7 @@
 
 .rank-button {
   width: 100%;
-  background: linear-gradient(135deg, #4A70A9, #8FABD4);
+  background: linear-gradient(135deg, #4A70A9, #4A70A9);
   color: white;
   padding: 1.2rem;
   border: none;
@@ -964,7 +974,7 @@
   color: #000000;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #8FABD4;
+  border-bottom: 2px solid #4A70A9;
   font-size: 1.5rem;
 }
 
@@ -976,7 +986,7 @@
 
 .ranking-item {
   background: white;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -989,7 +999,7 @@
 
 .ranking-item.top-ranking {
   border-color: #4A70A9;
-  background: linear-gradient(135deg, #EFECE3, white);
+  background: linear-gradient(135deg, #FFFFFF, white);
   animation: pulse 2s infinite;
 }
 
@@ -1009,7 +1019,7 @@
 .rank-number {
   width: 45px;
   height: 45px;
-  background: linear-gradient(135deg, #4A70A9, #8FABD4);
+  background: linear-gradient(135deg, #4A70A9, #4A70A9);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -1051,14 +1061,14 @@
 }
 
 .score-good {
-  background: #8FABD4;
+  background: #4A70A9;
   color: white;
 }
 
 .score-fair {
-  background: #EFECE3;
+  background: #FFFFFF;
   color: #000000;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
 }
 
 .score-display {
@@ -1079,7 +1089,7 @@
 
 .score-label {
   font-size: 0.85rem;
-  color: #8FABD4;
+  color: #4A70A9;
   margin-top: 0.2rem;
 }
 
@@ -1087,7 +1097,7 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #EFECE3;
+  background: #FFFFFF;
   border-radius: 4px;
   margin: 1rem 0;
   overflow: hidden;
@@ -1095,7 +1105,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4A70A9, #8FABD4);
+  background: linear-gradient(90deg, #4A70A9, #4A70A9);
   border-radius: 4px;
   transition: width 1s ease-in-out;
   position: relative;
@@ -1134,7 +1144,7 @@
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #8FABD4;
+  border-top: 1px solid #4A70A9;
 }
 
 .detail-group {
@@ -1165,8 +1175,8 @@
 }
 
 .resume-link:hover {
-  color: #8FABD4;
-  background: #EFECE3;
+  color: #4A70A9;
+  background: #FFFFFF;
   padding: 0.5rem;
   text-decoration: none;
 }
@@ -1191,21 +1201,21 @@
 }
 
 .stat-card.excellent {
-  background: linear-gradient(135deg, #4A70A9, #8FABD4);
+  background: linear-gradient(135deg, #4A70A9, #4A70A9);
   color: white;
   border: 2px solid #4A70A9;
 }
 
 .stat-card.good {
-  background: linear-gradient(135deg, #8FABD4, #EFECE3);
+  background: linear-gradient(135deg, #4A70A9, #FFFFFF);
   color: #000000;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
 }
 
 .stat-card.average {
-  background: linear-gradient(135deg, #EFECE3, white);
+  background: linear-gradient(135deg, #FFFFFF, white);
   color: #000000;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
 }
 
 .stat-title {
@@ -1225,9 +1235,9 @@
   text-align: center;
   padding: 2rem;
   color: #4A70A9;
-  background: #EFECE3;
+  background: #FFFFFF;
   border-radius: 8px;
-  border: 2px dashed #8FABD4;
+  border: 2px dashed #4A70A9;
   margin: 1rem 0;
 }
 
@@ -1345,4 +1355,11 @@
 
 .candidates-top-row {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
 }
+
+.candidates-top-row > .card {
+  width: 100% !important;
+  min-width: 0;
+}
+

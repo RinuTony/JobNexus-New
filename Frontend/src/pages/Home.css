@@ -1,14 +1,14 @@
 /* ================= COLOR VARIABLES ================= */
 
 :root {
-  --clr-deep: #213448;
-  --clr-mid: #547792;
-  --clr-light: #94B4C1;
-  --clr-soft: #EAE0CF;
+  --clr-deep: #4A70A9;
+  --clr-mid: #4A70A9;
+  --clr-light: #ffffff;
+  --clr-soft: #ffffff;
   --clr-text: #1E293B;
-  --clr-bg: #F8FAFC;
-  --clr-btn: #547792;
-  --clr-btn-hover: #94B4C1;
+  --clr-bg: #ffffff;
+  --clr-btn: #4A70A9;
+  --clr-btn-hover: #4A70A9;
 }
 
 /* ================= GLOBAL STYLES ================= */
@@ -154,7 +154,7 @@ nav {
 
 .role-badge.candidate { background: var(--clr-mid); }
 .role-badge.recruiter { background: var(--clr-deep); }
-.role-badge.admin { background: var(--clr-light); color: var(--clr-deep); }
+.role-badge.admin { background: var(--clr-deep); color: #ffffff; }
 
 /* ================= LOGIN PROMPT ================= */
 

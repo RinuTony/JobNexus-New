@@ -62,19 +62,7 @@ export default function ProfileIcon() {
   };
 
   const getAvatarColor = () => {
-    if (!user?.email) return "#4f46e5";
-    
-    const colors = [
-      "#4f46e5", // Indigo
-      "#059669", // Emerald
-      "#dc2626", // Red
-      "#d97706", // Amber
-      "#7c3aed", // Violet
-      "#0891b2", // Cyan
-    ];
-    
-    const hash = user.email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    return "#4A70A9";
   };
 
   const handleMenuItemClick = (path) => {
@@ -134,9 +122,9 @@ export default function ProfileIcon() {
               <h4>{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}</h4>
               <p className="user-email">{user?.email}</p>
               <p className="user-role">
-                {user?.role === "candidate" && "👤 Candidate"}
-                {user?.role === "recruiter" && "💼 Recruiter"}
-                {user?.role === "admin" && "🏛️ College Admin"}
+                {user?.role === "candidate" && "Candidate"}
+                {user?.role === "recruiter" && "Recruiter"}
+                {user?.role === "admin" && "College Admin"}
               </p>
             </div>
           </div>

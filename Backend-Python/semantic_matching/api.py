@@ -8,6 +8,12 @@ from typing import List, Optional, Dict, Any
 import tempfile
 import os
 import re
+import base64
+import io
+import wave
+import time
+import numpy as np
+import requests
 from core.extractor import extract_text, extract_skills, extract_contact_info
 from core.matcher import ResumeMatcher
 from core.utils import save_temp_file, cleanup_temp_file
@@ -22,8 +28,27 @@ from core.reasoning_helper import ReasoningHelper
 from core.tailor_helper import TailorHelper
 from core.career_recommender import CareerRecommender
 from dotenv import load_dotenv
+try:
+    from google.cloud import speech
+    from google.oauth2 import service_account
+except Exception:
+    speech = None
+    service_account = None
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+ASSEMBLYAI_BASE_URL = os.getenv("ASSEMBLYAI_BASE_URL", "https://api.assemblyai.com/v2").rstrip("/")
+ASSEMBLYAI_API_KEY = (os.getenv("ASSEMBLYAI_API_KEY") or "").strip()
+ASSEMBLYAI_POLL_INTERVAL_SECONDS = float(os.getenv("ASSEMBLYAI_POLL_INTERVAL_SECONDS", "0.8"))
+ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS = int(os.getenv("ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS", "45"))
+ASSEMBLYAI_LANGUAGE_CODE = (os.getenv("ASSEMBLYAI_LANGUAGE_CODE", "en") or "en").strip()
+ASSEMBLYAI_SPEECH_MODELS = [
+    model.strip()
+    for model in (os.getenv("ASSEMBLYAI_SPEECH_MODELS", "universal-2") or "").split(",")
+    if model.strip()
+]
+if not ASSEMBLYAI_SPEECH_MODELS:
+    ASSEMBLYAI_SPEECH_MODELS = ["universal-2"]
 
 app = FastAPI()
 matcher = ResumeMatcher()
@@ -31,6 +56,171 @@ db_helper = DatabaseHelper()
 interview_helper = InterviewHelper()
 skill_gap_analyzer = SkillGapAnalyzer()
 course_recommender = CourseRecommender()
+
+def _build_speech_client():
+    if speech is None:
+        return None
+
+    # 1) Prefer explicit credentials path in .env
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if credentials_path:
+        try:
+            creds = service_account.Credentials.from_service_account_file(credentials_path)
+            return speech.SpeechClient(credentials=creds)
+        except Exception as e:
+            print(f"Warning: failed to load Google credentials from file path: {e}")
+
+    # 2) Fallback: inline service-account JSON in .env
+    credentials_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if credentials_json:
+        try:
+            info = json.loads(credentials_json)
+            creds = service_account.Credentials.from_service_account_info(info)
+            return speech.SpeechClient(credentials=creds)
+        except Exception as e:
+            print(f"Warning: failed to load Google credentials from JSON: {e}")
+
+    # 3) Final fallback: default environment credentials (if set externally)
+    try:
+        return speech.SpeechClient()
+    except Exception as e:
+        print(f"Warning: default Google Speech client initialization failed: {e}")
+        return None
+
+
+speech_client = _build_speech_client()
+_free_stt_pipeline = None
+
+
+def _get_free_stt_pipeline():
+    global _free_stt_pipeline
+    if _free_stt_pipeline is not None:
+        return _free_stt_pipeline
+    try:
+        from transformers import pipeline
+        model_name = os.getenv("FREE_STT_MODEL", "openai/whisper-tiny.en")
+        _free_stt_pipeline = pipeline(
+            task="automatic-speech-recognition",
+            model=model_name,
+            device=-1,
+        )
+        print(f"Free STT initialized with model: {model_name}")
+        return _free_stt_pipeline
+    except Exception as e:
+        print(f"Warning: free STT initialization failed: {e}")
+        return None
+
+
+def _resample_audio_linear(audio_np: np.ndarray, source_sr: int, target_sr: int = 16000) -> np.ndarray:
+    """
+    Lightweight numpy-only linear resampler to avoid torchaudio dependency.
+    """
+    if source_sr <= 0 or target_sr <= 0 or audio_np.size == 0 or source_sr == target_sr:
+        return audio_np.astype(np.float32, copy=False)
+
+    duration = audio_np.shape[0] / float(source_sr)
+    target_len = max(1, int(round(duration * target_sr)))
+    src_idx = np.arange(audio_np.shape[0], dtype=np.float32)
+    dst_idx = np.linspace(0, audio_np.shape[0] - 1, num=target_len, dtype=np.float32)
+    resampled = np.interp(dst_idx, src_idx, audio_np.astype(np.float32))
+    return resampled.astype(np.float32, copy=False)
+
+
+def _assemblyai_headers(content_type: Optional[str] = None) -> Dict[str, str]:
+    if not ASSEMBLYAI_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="ASSEMBLYAI_API_KEY is not configured in Backend-Python/.env",
+        )
+    headers = {"authorization": ASSEMBLYAI_API_KEY}
+    if content_type:
+        headers["content-type"] = content_type
+    return headers
+
+
+def _normalize_assemblyai_language_code(language_code: Optional[str]) -> str:
+    code = (language_code or ASSEMBLYAI_LANGUAGE_CODE or "en").strip().lower()
+    if code.startswith("en"):
+        return "en"
+    return code
+
+
+def _assemblyai_transcribe(audio_bytes: bytes, language_code: Optional[str] = None) -> str:
+    if not audio_bytes:
+        return ""
+
+    upload_response = requests.post(
+        f"{ASSEMBLYAI_BASE_URL}/upload",
+        headers=_assemblyai_headers("application/octet-stream"),
+        data=audio_bytes,
+        timeout=30,
+    )
+    if upload_response.status_code >= 300:
+        raise HTTPException(
+            status_code=502,
+            detail=f"AssemblyAI upload failed ({upload_response.status_code}): {upload_response.text}",
+        )
+    upload_url = (upload_response.json() or {}).get("upload_url")
+    if not upload_url:
+        raise HTTPException(status_code=502, detail="AssemblyAI upload did not return upload_url.")
+
+    transcript_payload: Dict[str, Any] = {
+        "audio_url": upload_url,
+        "speech_models": ASSEMBLYAI_SPEECH_MODELS,
+        "language_code": _normalize_assemblyai_language_code(language_code),
+    }
+
+    transcript_response = requests.post(
+        f"{ASSEMBLYAI_BASE_URL}/transcript",
+        headers=_assemblyai_headers("application/json"),
+        json=transcript_payload,
+        timeout=30,
+    )
+    if transcript_response.status_code >= 300:
+        raise HTTPException(
+            status_code=502,
+            detail=f"AssemblyAI transcript request failed ({transcript_response.status_code}): {transcript_response.text}",
+        )
+    transcript_id = (transcript_response.json() or {}).get("id")
+    if not transcript_id:
+        raise HTTPException(status_code=502, detail="AssemblyAI transcript request did not return id.")
+
+    started = time.time()
+    while (time.time() - started) <= ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS:
+        status_response = requests.get(
+            f"{ASSEMBLYAI_BASE_URL}/transcript/{transcript_id}",
+            headers=_assemblyai_headers(),
+            timeout=30,
+        )
+        if status_response.status_code >= 300:
+            raise HTTPException(
+                status_code=502,
+                detail=f"AssemblyAI transcript polling failed ({status_response.status_code}): {status_response.text}",
+            )
+
+        payload = status_response.json() or {}
+        status = str(payload.get("status") or "").lower()
+        if status == "completed":
+            return str(payload.get("text") or "").strip()
+        if status == "error":
+            error_text = str(payload.get("error") or "unknown error")
+            lowered = error_text.lower()
+            if (
+                "no spoken audio" in lowered
+                or "transcoding failed" in lowered
+                or "does not appear to contain audio" in lowered
+            ):
+                return ""
+            raise HTTPException(
+                status_code=502,
+                detail=f"AssemblyAI transcription error: {error_text}",
+            )
+        time.sleep(ASSEMBLYAI_POLL_INTERVAL_SECONDS)
+
+    raise HTTPException(
+        status_code=504,
+        detail="AssemblyAI transcription timed out while waiting for completion.",
+    )
 
 # Initialize reasoning helper with error handling
 try:
@@ -144,6 +334,13 @@ class InterviewAnswerRequest(BaseModel):
     audio_format: Optional[str] = None
     sample_rate_hz: Optional[int] = None
     include_audio: bool = True
+
+
+class InterviewTranscribeRequest(BaseModel):
+    audio_base64: str
+    audio_format: Optional[str] = "webm_opus"
+    sample_rate_hz: Optional[int] = None
+    language_code: Optional[str] = "en-US"
 
 
 class InterviewStopRequest(BaseModel):
@@ -742,6 +939,50 @@ async def get_career_recommendation(request: CareerRecommendationRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+def _resolve_stt_encoding(audio_format: Optional[str]):
+    if speech is None:
+        return None
+    normalized = str(audio_format or "").strip().lower()
+    aliases = {
+        "webm": "webm_opus",
+        "audio/webm": "webm_opus",
+        "audio/webm;codecs=opus": "webm_opus",
+        "ogg": "ogg_opus",
+        "audio/ogg": "ogg_opus",
+        "audio/ogg;codecs=opus": "ogg_opus",
+        "wav": "linear16",
+        "audio/wav": "linear16",
+        "audio/x-wav": "linear16",
+        "mp3": "mp3",
+        "audio/mp3": "mp3",
+        "audio/mpeg": "mp3",
+    }
+    key = aliases.get(normalized, normalized)
+    mapping = {
+        "linear16": speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        "ogg_opus": speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
+        "webm_opus": speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
+        "mp3": speech.RecognitionConfig.AudioEncoding.MP3,
+    }
+    return mapping.get(key, speech.RecognitionConfig.AudioEncoding.WEBM_OPUS)
+
+
+@app.post("/api/interview/transcribe")
+async def interview_transcribe(request: InterviewTranscribeRequest):
+    """
+    Transcribe short microphone chunks via AssemblyAI.
+    """
+    try:
+        audio_bytes = base64.b64decode(request.audio_base64)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid audio_base64 payload.")
+
+    if not audio_bytes:
+        return {"success": True, "transcript": ""}
+    transcript = _assemblyai_transcribe(audio_bytes, language_code=request.language_code)
+    return {"success": True, "transcript": transcript}
+
 @app.get("/health")
 async def health_check():
     # Test database connection
@@ -911,18 +1152,53 @@ async def interview_answer(request: InterviewAnswerRequest):
         if not resume_text or not jd_text:
             raise HTTPException(status_code=500, detail="Session text data missing")
 
-        ai_result = interview_helper.evaluate_answer(
-            resume_text=resume_text,
-            jd_text=jd_text,
-            question=question.get("question_text", ""),
-            answer_text=request.answer_text,
-            answer_audio_base64=request.answer_audio_base64,
-            audio_format=request.audio_format,
-            sample_rate_hz=request.sample_rate_hz,
-            include_audio=request.include_audio,
-        )
-        if not ai_result.get("success"):
-            raise HTTPException(status_code=502, detail=ai_result)
+        raw_format = str(request.audio_format or "").strip().lower()
+        format_aliases = {
+            "audio/webm": "webm",
+            "audio/webm;codecs=opus": "webm",
+            "webm_opus": "webm",
+            "audio/ogg": "ogg",
+            "audio/ogg;codecs=opus": "ogg",
+            "ogg_opus": "ogg",
+            "audio/wav": "wav",
+            "audio/x-wav": "wav",
+            "linear16": "wav",
+            "audio/mp3": "mp3",
+            "audio/mpeg": "mp3",
+        }
+        normalized_format = format_aliases.get(raw_format, raw_format or None)
+
+        fallback_formats = [normalized_format]
+        if request.answer_audio_base64 and not request.answer_text:
+            for candidate in [None, "webm", "ogg", "wav", "mp3"]:
+                if candidate not in fallback_formats:
+                    fallback_formats.append(candidate)
+
+        ai_result = None
+        for candidate_format in fallback_formats:
+            attempt = interview_helper.evaluate_answer(
+                resume_text=resume_text,
+                jd_text=jd_text,
+                question=question.get("question_text", ""),
+                answer_text=request.answer_text,
+                answer_audio_base64=request.answer_audio_base64,
+                audio_format=candidate_format,
+                sample_rate_hz=request.sample_rate_hz,
+                include_audio=request.include_audio,
+            )
+
+            if attempt.get("success") and (
+                (attempt.get("answer_text") and str(attempt.get("answer_text")).strip())
+                or isinstance(attempt.get("feedback"), dict)
+            ):
+                ai_result = attempt
+                break
+
+            # Keep last attempt for error reporting.
+            ai_result = attempt
+
+        if not ai_result or not ai_result.get("success"):
+            raise HTTPException(status_code=502, detail=ai_result or {"success": False, "message": "Interview evaluation failed"})
 
         feedback = ai_result.get("feedback", {})
         score = feedback.get("score") if isinstance(feedback, dict) else None

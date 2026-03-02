@@ -1,7 +1,7 @@
 /* Login.css - Compact Version */
 .login-page-compact {
   min-height: 100vh;
-  background: #EFECE3;
+  background: #ffffff;
   font-family: var(--app-font-family);
   padding: 2rem;
 }
@@ -23,7 +23,7 @@
 }
 
 .back-link:hover {
-  color: #8FABD4;
+  color: #4A70A9;
 }
 
 /* Main Container */
@@ -66,7 +66,7 @@
 
 .role-tabs-compact {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -77,7 +77,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem 0.5rem;
-  border: 2px solid #8FABD4;
+  border: 2px solid #4A70A9;
   background: white;
   border-radius: 12px;
   color: #4A70A9;
@@ -111,7 +111,7 @@
   padding: 0.75rem;
   background: white;
   border-radius: 8px;
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
 }
 
 /* Form Card */
@@ -120,7 +120,7 @@
   border-radius: 16px;
   padding: 2.5rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #8FABD4;
+  border: 1px solid #4A70A9;
 }
 
 .form-header-compact {
@@ -170,12 +170,12 @@
 .form-group-compact input {
   width: 100%;
   padding: 1rem 1.2rem;
-  border: 1.5px solid #8FABD4;
+  border: 1.5px solid #4A70A9;
   border-radius: 10px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   box-sizing: border-box;
-  background: #EFECE3;
+  background: #ffffff;
 }
 
 .form-group-compact input:focus {
@@ -186,12 +186,12 @@
 }
 
 .form-group-compact input::placeholder {
-  color: #8FABD4;
+  color: #4A70A9;
 }
 
 .password-hint-compact {
   margin: 0.5rem 0 0 0;
-  color: #8FABD4;
+  color: #4A70A9;
   font-size: 0.8rem;
 }
 
@@ -230,7 +230,7 @@
 }
 
 .submit-btn-compact:hover:not(:disabled) {
-  background: #8FABD4;
+  background: #4A70A9;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(74, 112, 169, 0.3);
 }
@@ -253,7 +253,7 @@
 }
 
 .database-admin-link-compact:hover {
-  color: #8FABD4;
+  color: #4A70A9;
 }
 
 .database-admin-link-compact.active {
@@ -279,7 +279,7 @@
   align-items: center;
   text-align: center;
   margin: 1.5rem 0;
-  color: #8FABD4;
+  color: #4A70A9;
   font-size: 0.85rem;
 }
 
@@ -287,7 +287,7 @@
 .divider-compact::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #8FABD4;
+  border-bottom: 1px solid #4A70A9;
 }
 
 .divider-compact span {
@@ -303,7 +303,7 @@
 
 .social-btn-compact {
   padding: 0.85rem;
-  border: 1.5px solid #8FABD4;
+  border: 1.5px solid #4A70A9;
   background: white;
   border-radius: 10px;
   font-weight: 500;
@@ -318,7 +318,7 @@
 
 .social-btn-compact:hover {
   border-color: #4A70A9;
-  background: #EFECE3;
+  background: #FFFFFF;
 }
 
 .social-btn-compact.google {
@@ -333,12 +333,12 @@
 .terms-compact {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid #8FABD4;
+  border-top: 1px solid #4A70A9;
 }
 
 .terms-compact p {
   margin: 0;
-  color: #8FABD4;
+  color: #4A70A9;
   font-size: 0.85rem;
 }
 
@@ -425,3 +425,4 @@
     margin-bottom: 0;
   }
 }
+

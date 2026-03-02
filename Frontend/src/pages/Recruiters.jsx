@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
 import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
@@ -52,7 +51,6 @@ export default function Recruiters() {
 
   const [selectedJobForRanking, setSelectedJobForRanking] = useState("");
   const [rankings, setRankings] = useState([]);
-  const [rankingOpen, setRankingOpen] = useState(false);
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState("");
   const [recruiterJobs, setRecruiterJobs] = useState([]);
@@ -480,30 +478,30 @@ export default function Recruiters() {
               onClick={() => setShowNotificationsMenu((prev) => !prev)}
               style={{
                 position: "relative",
-                width: "40px",
-                height: "40px",
-                borderRadius: "999px",
-                border: "1px solid #d1d5db",
-                backgroundColor: "white",
-                color: "#374151",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid rgba(255,255,255,0.8)",
+                backgroundColor: "transparent",
+                color: "#ffffff",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
+                fontSize: "13px",
+                fontWeight: "600",
+                gap: "6px",
                 cursor: "pointer"
               }}
               aria-label="Notifications"
             >
-              <Bell size={18} />
+              Notifications
               {unreadCount > 0 && (
                 <span style={{
-                  position: "absolute",
-                  top: "-3px",
-                  right: "-3px",
+                  position: "relative",
                   minWidth: "16px",
                   height: "16px",
                   borderRadius: "999px",
-                  backgroundColor: "#4A70A9",
-                  color: "white",
+                  backgroundColor: "#ffffff",
+                  color: "#4A70A9",
                   fontSize: "10px",
                   fontWeight: "700",
                   display: "flex",
@@ -592,7 +590,7 @@ export default function Recruiters() {
       </header>
 
       <main className="recruiter-layout">
-        <div className="top-row">
+        <div className="top-row recruiter-top-row">
           {/* Left: Post Job Form */}
           <section className="card post-job-card">
             <h2>Post New Job</h2>
@@ -726,130 +724,6 @@ export default function Recruiters() {
                     <span className="metric-label">Candidates</span>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="section-block">
-              <div className="ranking-accordion">
-                <button
-                  className="accordion-toggle"
-                  onClick={() => setRankingOpen((prev) => !prev)}
-                >
-                  <span>Ranking</span>
-                  <span className="accordion-icon">{rankingOpen ? "-" : "+"}</span>
-                </button>
-
-                {rankingOpen && (
-                  <div className="ranking-card inline-ranking inline-ranking-top">
-                    <h3>Rank Candidates by Match Score</h3>
-                    <p className="ranking-subtitle">Select a job and rank candidates who applied for it</p>
-
-                {selectedJobForRanking && (
-                  <div className="selected-job-info">
-                    <h4>
-                      {recruiterJobs.find((j) => j.id.toString() === selectedJobForRanking.toString())?.title ||
-                        "Selected Job"}
-                    </h4>
-                    <p>Applications: {filteredApplications.length} candidates</p>
-                  </div>
-                )}
-
-                {rankingError && <div className="ranking-error">{rankingError}</div>}
-
-                <button
-                  onClick={handleRankCandidates}
-                  disabled={rankingLoading || !selectedJobForRanking}
-                  className="rank-button"
-                >
-                  {rankingLoading ? (
-                    <>
-                      <span className="spinner"></span>
-                      Analyzing Resumes...
-                    </>
-                  ) : (
-                    <>
-                      <span className="rank-icon">Rank</span>
-                      Rank Candidates
-                    </>
-                  )}
-                </button>
-
-                    {rankings.length > 0 && (
-                  <div className="rankings-results">
-                    <h3>Candidate Rankings</h3>
-
-                    <div className="rankings-list">
-                      {rankings.map((candidate, index) => {
-                        const badge = getScoreBadge(candidate.score);
-                        return (
-                          <div key={index} className={`ranking-item ${index === 0 ? "top-ranking" : ""}`}>
-                            <div className="ranking-header">
-                              <div className="rank-number">{index + 1}</div>
-                              <div className="candidate-info">
-                                <h4>
-                                  {candidate.candidate_name || candidate.candidate_email || `Candidate ${candidate.candidate_id}`}
-                                </h4>
-                                <span className={`score-badge ${badge.className}`}>{badge.text}</span>
-                              </div>
-                              <div className="score-display">
-                                <div className="score-value">{(candidate.score * 100).toFixed(1)}%</div>
-                                <div className="score-label">Match Score</div>
-                              </div>
-                            </div>
-
-                            <div className="progress-bar">
-                              <div className="progress-fill" style={{ width: `${candidate.score * 100}%` }}></div>
-                            </div>
-
-                            <div className="candidate-details">
-                              <div className="detail-group">
-                                <strong>Resume:</strong>
-                                {candidate.resume_filename ? (
-                                  <button
-                                    onClick={() => downloadRankedResume(candidate.resume_filename)}
-                                    className="resume-link"
-                                  >
-                                    {candidate.resume_filename}
-                                  </button>
-                                ) : (
-                                  <span>No resume</span>
-                                )}
-                              </div>
-                              <div className="detail-group">
-                                <strong>Applied:</strong>
-                                <span>{formatDate(candidate.applied_at)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="summary-stats">
-                      <div className="stat-card excellent">
-                        <div className="stat-title">Excellent Matches</div>
-                        <div className="stat-value">{rankings.filter((r) => r.score >= 0.7).length}</div>
-                      </div>
-                      <div className="stat-card good">
-                        <div className="stat-title">Good Matches</div>
-                        <div className="stat-value">
-                          {rankings.filter((r) => r.score >= 0.5 && r.score < 0.7).length}
-                        </div>
-                      </div>
-                      <div className="stat-card average">
-                        <div className="stat-title">Average Score</div>
-                        <div className="stat-value">
-                          {rankings.length > 0
-                            ? ((rankings.reduce((sum, r) => sum + r.score, 0) / rankings.length) * 100).toFixed(1) +
-                              "%"
-                            : "0%"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1032,6 +906,143 @@ export default function Recruiters() {
                 </div>
               )}
             </div>
+          </section>
+
+          <section className="card recruiter-ranking-card">
+            <h2>Ranking</h2>
+            <div className="section-block">
+              <h3>Rank Candidates by Match Score</h3>
+              <p className="ranking-subtitle">Select a job and rank candidates who applied for it</p>
+
+              <div className="filter-item" style={{ marginBottom: "0.8rem" }}>
+                <label className="toolbar-label">Job</label>
+                {recruiterJobs.length === 0 ? (
+                  <div className="no-jobs">No jobs posted yet</div>
+                ) : (
+                  <select
+                    value={selectedJobForRanking}
+                    onChange={(e) => {
+                      setSelectedJobForRanking(e.target.value);
+                      setRankings([]);
+                      setRankingError("");
+                    }}
+                    className="job-selector"
+                  >
+                    <option value="">All jobs</option>
+                    {recruiterJobs.map((job) => (
+                      <option key={job.id} value={job.id}>
+                        {job.title} ({job.company_name || "Company"}) - {new Date(job.created_at).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {selectedJobForRanking && (
+                <div className="selected-job-info">
+                  <h4>
+                    {recruiterJobs.find((j) => j.id.toString() === selectedJobForRanking.toString())?.title ||
+                      "Selected Job"}
+                  </h4>
+                  <p>Applications: {filteredApplications.length} candidates</p>
+                </div>
+              )}
+
+              {rankingError && <div className="ranking-error">{rankingError}</div>}
+
+              <button
+                onClick={handleRankCandidates}
+                disabled={rankingLoading || !selectedJobForRanking}
+                className="rank-button"
+              >
+                {rankingLoading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Analyzing Resumes...
+                  </>
+                ) : (
+                  <>
+                    <span className="rank-icon">Rank</span>
+                    Rank Candidates
+                  </>
+                )}
+              </button>
+            </div>
+
+            {rankings.length > 0 && (
+              <div className="rankings-results">
+                <h3>Candidate Rankings</h3>
+
+                <div className="rankings-list">
+                  {rankings.map((candidate, index) => {
+                    const badge = getScoreBadge(candidate.score);
+                    return (
+                      <div key={index} className={`ranking-item ${index === 0 ? "top-ranking" : ""}`}>
+                        <div className="ranking-header">
+                          <div className="rank-number">{index + 1}</div>
+                          <div className="candidate-info">
+                            <h4>
+                              {candidate.candidate_name || candidate.candidate_email || `Candidate ${candidate.candidate_id}`}
+                            </h4>
+                            <span className={`score-badge ${badge.className}`}>{badge.text}</span>
+                          </div>
+                          <div className="score-display">
+                            <div className="score-value">{(candidate.score * 100).toFixed(1)}%</div>
+                            <div className="score-label">Match Score</div>
+                          </div>
+                        </div>
+
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: `${candidate.score * 100}%` }}></div>
+                        </div>
+
+                        <div className="candidate-details">
+                          <div className="detail-group">
+                            <strong>Resume:</strong>
+                            {candidate.resume_filename ? (
+                              <button
+                                onClick={() => downloadRankedResume(candidate.resume_filename)}
+                                className="resume-link"
+                              >
+                                {candidate.resume_filename}
+                              </button>
+                            ) : (
+                              <span>No resume</span>
+                            )}
+                          </div>
+                          <div className="detail-group">
+                            <strong>Applied:</strong>
+                            <span>{formatDate(candidate.applied_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="summary-stats">
+                  <div className="stat-card excellent">
+                    <div className="stat-title">Excellent Matches</div>
+                    <div className="stat-value">{rankings.filter((r) => r.score >= 0.7).length}</div>
+                  </div>
+                  <div className="stat-card good">
+                    <div className="stat-title">Good Matches</div>
+                    <div className="stat-value">
+                      {rankings.filter((r) => r.score >= 0.5 && r.score < 0.7).length}
+                    </div>
+                  </div>
+                  <div className="stat-card average">
+                    <div className="stat-title">Average Score</div>
+                    <div className="stat-value">
+                      {rankings.length > 0
+                        ? ((rankings.reduce((sum, r) => sum + r.score, 0) / rankings.length) * 100).toFixed(1) +
+                          "%"
+                        : "0%"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
         </div>

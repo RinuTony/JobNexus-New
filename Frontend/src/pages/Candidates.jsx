@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, X, BarChart3, MessageSquare, Sparkles, Wand2, BookOpen, Youtube, Globe, Award, ExternalLink, Bell } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import ProfileIcon from "./ProfileIcon";
 import "./Recruiters.css";
 
@@ -695,7 +695,7 @@ export default function Candidates() {
   };
 
   const statusMeta = {
-    unapplied: { label: "Unapplied", symbol: "[ ]", bg: "#f3f4f6", color: "#374151" },
+    unapplied: { label: "Unapplied", symbol: "[ ]", bg: "#f3f4f6", color: "#000000" },
     applied: { label: "Applied", symbol: "[A]", bg: "#e0f2fe", color: "#075985" },
     pending: { label: "Pending", symbol: "[...]", bg: "#fff7ed", color: "#9a3412" },
     reviewed: { label: "Reviewed", symbol: "[R]", bg: "#ede9fe", color: "#5b21b6" },
@@ -734,21 +734,6 @@ export default function Candidates() {
     }
   });
 
-  const getCourseSourceIcon = (source) => {
-    switch (source) {
-      case "youtube":
-        return <Youtube size={16} />;
-      case "coursera":
-        return <BookOpen size={16} />;
-      case "udemy":
-        return <Award size={16} />;
-      case "edx":
-        return <Globe size={16} />;
-      default:
-        return <Globe size={16} />;
-    }
-  };
-
   return (
     <>
       <header className="dashboard-header">
@@ -765,30 +750,30 @@ export default function Candidates() {
               onClick={() => setShowNotificationsMenu((prev) => !prev)}
               style={{
                 position: "relative",
-                width: "40px",
-                height: "40px",
-                borderRadius: "999px",
-                border: "1px solid #d1d5db",
-                backgroundColor: "white",
-                color: "#374151",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid rgba(255,255,255,0.8)",
+                backgroundColor: "transparent",
+                color: "#ffffff",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
+                fontSize: "13px",
+                fontWeight: "600",
+                gap: "6px",
                 cursor: "pointer"
               }}
               aria-label="Notifications"
             >
-              <Bell size={18} />
+              Notifications
               {unreadCount > 0 && (
                 <span style={{
-                  position: "absolute",
-                  top: "-3px",
-                  right: "-3px",
+                  position: "relative",
                   minWidth: "16px",
                   height: "16px",
                   borderRadius: "999px",
-                  backgroundColor: "#4A70A9",
-                  color: "white",
+                  backgroundColor: "#ffffff",
+                  color: "#4A70A9",
                   fontSize: "10px",
                   fontWeight: "700",
                   display: "flex",
@@ -817,7 +802,7 @@ export default function Candidates() {
                 padding: "10px"
               }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#1f2937" }}>Notifications</div>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#000000" }}>Notifications</div>
                   <div style={{ fontSize: "11px", color: "#6b7280" }}>{unreadCount} unread</div>
                 </div>
 
@@ -847,7 +832,7 @@ export default function Candidates() {
                       backgroundColor: n.is_read ? "#f9fafb" : "#eef2ff"
                     }}
                   >
-                    <div style={{ fontSize: "13px", color: "#1f2937", fontWeight: 500 }}>
+                    <div style={{ fontSize: "13px", color: "#000000", fontWeight: 500 }}>
                       {n.message || `Your application status was ${humanizeNotificationStatus(n.status)}.`}
                     </div>
                     <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>
@@ -885,22 +870,15 @@ export default function Candidates() {
             height: "calc(100vh - 180px)",
             display: "flex",
             flexDirection: "column",
-            boxSizing: "border-box",
-            overflowY: "auto",
-            overflowX: "hidden",
             minHeight: 0
           }}>
             <div style={{ marginBottom: "12px" }}>
               <h2 style={{ 
                 fontSize: "20px", 
-                fontWeight: "500", 
-                color: "#1f2937", 
-                display: "flex", 
-                alignItems: "center", 
-                gap: "8px",
+                fontWeight: "800",
+                color: "#000000", 
                 marginBottom: "16px"
               }}>
-                <FileText size={20} />
                 My Resumes
               </h2>
               <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
@@ -947,7 +925,6 @@ export default function Candidates() {
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#4A70A9"}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#8FABD4"}
                 >
-                  <Wand2 size={16} />
                   Create
                 </button>
               </div>
@@ -967,7 +944,6 @@ export default function Candidates() {
                   borderRadius: "8px",
                   border: "2px dashed #d1d5db"
                 }}>
-                  <FileText size={48} color="#9ca3af" style={{ marginBottom: "16px" }} />
                   <p style={{ color: "#6b7280", marginBottom: "16px", fontSize: "14px" }}>
                     No resumes yet
                   </p>
@@ -1002,7 +978,15 @@ export default function Candidates() {
                               {new Date(resume.updated_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(2, auto)",
+                              gap: "6px",
+                              justifyContent: "end",
+                              alignItems: "center"
+                            }}
+                          >
                             <button
                               onClick={() => navigate('/resume-preview', { state: { resumeData: resume } })}
                               style={{ 
@@ -1012,7 +996,7 @@ export default function Candidates() {
                                 cursor: "pointer", 
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                padding: "4px 8px",
+                                padding: "3px 6px",
                                 borderRadius: "4px"
                               }}
                             >
@@ -1027,7 +1011,7 @@ export default function Candidates() {
                                 cursor: "pointer", 
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                padding: "4px 8px",
+                                padding: "3px 6px",
                                 borderRadius: "4px"
                               }}
                             >
@@ -1042,7 +1026,7 @@ export default function Candidates() {
                                 cursor: "pointer", 
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                padding: "4px 8px",
+                                padding: "3px 6px",
                                 borderRadius: "4px"
                               }}
                             >
@@ -1057,7 +1041,7 @@ export default function Candidates() {
                                 cursor: "pointer", 
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                padding: "4px 8px",
+                                padding: "3px 6px",
                                 borderRadius: "4px"
                               }}
                             >
@@ -1149,13 +1133,9 @@ export default function Candidates() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", gap: "12px" }}>
               <h2 style={{ 
                 fontSize: "20px", 
-                fontWeight: "500", 
-                color: "#1f2937",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px"
+                fontWeight: "800", 
+                color: "#000000"
               }}>
-                <FileText size={20} />
                 Available Jobs
                 {!loading && (
                   <span style={{ 
@@ -1181,7 +1161,7 @@ export default function Candidates() {
                     backgroundColor: "white",
                     fontSize: "14px",
                     fontWeight: "500",
-                    color: "#1f2937"
+                    color: "#000000"
                   }}
                 >
                   <option value="all">All</option>
@@ -1242,7 +1222,6 @@ export default function Candidates() {
                   borderRadius: "8px",
                   border: "2px dashed #d1d5db"
                 }}>
-                  <FileText size={48} color="#9ca3af" style={{ marginBottom: "16px" }} />
                   <h3 style={{ fontSize: "16px", fontWeight: "500", color: "#4b5563", marginBottom: "8px" }}>
                     {jobs.length === 0 ? "No jobs available" : "No jobs match this filter"}
                   </h3>
@@ -1276,7 +1255,7 @@ export default function Candidates() {
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
                           <div style={{ flex: 1 }}>
-                            <h3 style={{ fontSize: "17px", fontWeight: "600", color: "#1f2937", marginBottom: "4px" }}>
+                            <h3 style={{ fontSize: "17px", fontWeight: "600", color: "#000000", marginBottom: "4px" }}>
                               {job.title}
                             </h3>
                             <p style={{ color: "#6b7280", fontSize: "13px" }}>
@@ -1452,7 +1431,6 @@ export default function Candidates() {
                                 gap: "6px"
                               }}
                             >
-                              <BarChart3 size={14} />
                               {matchLoading[job.id] ? "..." : "Score"}
                             </button>
 
@@ -1478,7 +1456,6 @@ export default function Candidates() {
                                 gap: "6px"
                               }}
                             >
-                              <MessageSquare size={14} />
                               {interviewLoading[job.id] ? "..." : "Interview"}
                             </button>
                         </div>
@@ -1522,15 +1499,11 @@ export default function Candidates() {
           }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <h2 style={{
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  color: "#1f2937",
-                  margin: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
+                  fontSize: "20px",
+                  fontWeight: "800",
+                  color: "#000000",
+                  margin: 0
                 }}>
-                  <Sparkles size={18} />
                   Career Recommendation
                 </h2>
                 <button
@@ -1627,7 +1600,7 @@ export default function Candidates() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: "12px", color: "#374151", marginBottom: "6px", fontWeight: "600" }}>
+                      <div style={{ fontSize: "12px", color: "#000000", marginBottom: "6px", fontWeight: "600" }}>
                         Top Matches
                       </div>
                       <div style={{ display: "grid", gap: "6px" }}>
@@ -1653,7 +1626,7 @@ export default function Candidates() {
                     </div>
 
                     <div>
-                      <div style={{ fontSize: "12px", color: "#374151", marginBottom: "6px", fontWeight: "600" }}>
+                      <div style={{ fontSize: "12px", color: "#000000", marginBottom: "6px", fontWeight: "600" }}>
                         Missing Skills
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -1832,7 +1805,7 @@ export default function Candidates() {
       
       {/* Score Header */}
       <div style={{ marginBottom: "24px" }}>
-        <h4 style={{ fontSize: "16px", fontWeight: "500", marginBottom: "8px", color: "#374151" }}>
+        <h4 style={{ fontSize: "16px", fontWeight: "500", marginBottom: "8px", color: "#000000" }}>
           {selectedMatchResult.job_title || "Job"}
         </h4>
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
@@ -1877,22 +1850,6 @@ export default function Candidates() {
           )}
         </div>
         
-        {/* Detected Skills */}
-        {selectedMatchResult.detected_skills && selectedMatchResult.detected_skills.length > 0 && (
-          <div style={{ marginBottom: "20px" }}>
-            <h5 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#374151" }}>
-              Detected Skills:
-            </h5>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {selectedMatchResult.detected_skills.map((skill, idx) => (
-                <span key={idx} style={{ backgroundColor: "#e0e7ff", color: "#4A70A9", padding: "4px 8px", borderRadius: "4px", fontSize: "0.875rem" }}>
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-        
         {/* REASONING SECTION */}
         {selectedMatchResult.reasoning && (
           <div style={{ marginBottom: "24px" }}>
@@ -1900,25 +1857,9 @@ export default function Candidates() {
               fontSize: "16px", 
               fontWeight: "600", 
               marginBottom: "16px", 
-              color: "#374151",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px"
+              color: "#000000"
             }}>
-              <Sparkles size={16} />
-              AI Match Analysis
-              {selectedMatchResult.reasoning.source && (
-                <span style={{ 
-                  fontSize: "12px", 
-                  backgroundColor: selectedMatchResult.reasoning.source === "AI Analysis" ? "#dbeafe" : "#f3f4f6",
-                  color: selectedMatchResult.reasoning.source === "AI Analysis" ? "#1e40af" : "#6b7280",
-                  padding: "2px 8px", 
-                  borderRadius: "12px",
-                  fontWeight: "500"
-                }}>
-                  {selectedMatchResult.reasoning.source}
-                </span>
-              )}
+              Match Analysis
             </h5>
             
             <div style={{ display: "grid", gap: "16px" }}>
@@ -1931,7 +1872,7 @@ export default function Candidates() {
                   borderLeft: "3px solid #3b82f6"
                 }}>
                   <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#1e40af" }}>
-                    ?? Score Explanation
+                    Score Explanation
                   </h6>
                   <p style={{ color: "#4b5563", fontSize: "14px", lineHeight: "1.5" }}>
                     {selectedMatchResult.reasoning.score_explanation}
@@ -1948,8 +1889,8 @@ export default function Candidates() {
                   borderRadius: "8px",
                   borderLeft: "3px solid #10b981"
                 }}>
-                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#065f46", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "#10b981" }}>?</span> Strengths
+                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#065f46" }}>
+                    Strengths
                   </h6>
                   {Array.isArray(selectedMatchResult.reasoning.strengths) ? (
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -1973,8 +1914,8 @@ export default function Candidates() {
                   borderRadius: "8px",
                   borderLeft: "3px solid #f59e0b"
                 }}>
-                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#92400e", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "#f59e0b" }}>?</span> Areas to Improve
+                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#92400e" }}>
+                    Areas to Improve
                   </h6>
                   {Array.isArray(selectedMatchResult.reasoning.gaps) ? (
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2000,8 +1941,8 @@ export default function Candidates() {
                   borderRadius: "8px",
                   borderLeft: "3px solid #60a5fa"
                 }}>
-                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#1e40af", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "#3b82f6" }}>??</span> Suggestions
+                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#1e40af" }}>
+                    Suggestions
                   </h6>
                   {Array.isArray(selectedMatchResult.reasoning.suggestions) ? (
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2027,8 +1968,8 @@ export default function Candidates() {
                   borderRadius: "8px",
                   borderLeft: "3px solid #8FABD4"
                 }}>
-                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#5b21b6", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "#8FABD4" }}>??</span> Overall Assessment
+                  <h6 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#5b21b6" }}>
+                    Overall Assessment
                   </h6>
                   <p style={{ color: "#5b21b6", fontSize: "14px", lineHeight: "1.5" }}>
                     {selectedMatchResult.reasoning.overall_assessment}
@@ -2055,8 +1996,8 @@ export default function Candidates() {
         
         {/* Recommendation Card */}
         <div style={{ backgroundColor: "#f8fafc", padding: "16px", borderRadius: "6px", borderLeft: "4px solid #3b82f6", marginBottom: "24px" }}>
-          <h5 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ color: "#3b82f6" }}>??</span> Recommendation
+          <h5 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#000000" }}>
+            Recommendation
           </h5>
           <p style={{ color: "#4b5563", fontSize: "14px", lineHeight: "1.5" }}>
             {selectedMatchResult.recommendation || "No recommendation available."}
@@ -2070,12 +2011,8 @@ export default function Candidates() {
           fontSize: "16px", 
           fontWeight: "600", 
           marginBottom: "12px", 
-          color: "#374151",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px"
+          color: "#000000"
         }}>
-          <BookOpen size={16} />
           Skill Gap & Course Recommendations
         </h5>
 
@@ -2124,7 +2061,7 @@ export default function Candidates() {
 
                   return (
                     <div key={skill} style={{ backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e5e7eb", padding: "12px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "600", color: "#000000", marginBottom: "8px" }}>
                         {skill}
                       </div>
                       <div style={{ display: "grid", gap: "8px" }}>
@@ -2138,7 +2075,7 @@ export default function Candidates() {
                               style={{
                                 display: "flex",
                                 alignItems: "center",
-                                gap: "8px",
+                                gap: "6px",
                                 padding: "8px",
                                 borderRadius: "6px",
                                 border: "1px solid #e5e7eb",
@@ -2147,9 +2084,6 @@ export default function Candidates() {
                                 color: "inherit"
                               }}
                             >
-                              <div style={{ color: "#6b7280" }}>
-                                {getCourseSourceIcon(course.source)}
-                              </div>
                               <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: "12px", fontWeight: "500", color: "#111827" }}>
                                   {course.title || "Course"}
@@ -2158,7 +2092,6 @@ export default function Candidates() {
                                   {course.provider || course.instructor || course.source || "Source"}
                                 </div>
                               </div>
-                              <ExternalLink size={14} color="#9ca3af" />
                             </a>
                           ))
                         ) : (
@@ -2196,11 +2129,9 @@ export default function Candidates() {
             fontSize: "16px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: "8px"
+            justifyContent: "center"
           }}
         >
-          <MessageSquare size={16} />
           Start Interview Prep
         </button>
       </div>
@@ -2208,11 +2139,6 @@ export default function Candidates() {
     </div>
   </div>
 )}
-
-      {/* Footer */}
-      <footer className="dashboard-footer">
-        <p>&copy; 2025 Job Nexus</p>
-      </footer>
 
       {/* CSS */}
       <style>
@@ -2239,5 +2165,6 @@ export default function Candidates() {
     </>
   );
 }
+
 
 

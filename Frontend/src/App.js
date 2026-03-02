@@ -19,6 +19,7 @@ import ResumePreview from './pages/ResumePreview';
 import DatabaseAdmin from "./pages/DatabaseAdmin";
 import DatabaseAdminUsers from "./pages/DatabaseAdminUsers";
 import DatabaseAdminRecords from "./pages/DatabaseAdminRecords";
+import { ENABLE_COLLEGE_ADMIN } from "./config/featureFlags";
 
 // Component to handle initial redirect
 function InitialRedirect() {
@@ -38,7 +39,7 @@ function InitialRedirect() {
           setRedirect("/recruiters");
           break;
         case "admin":
-          setRedirect("/collegeadmins");
+          setRedirect(ENABLE_COLLEGE_ADMIN ? "/collegeadmins" : "/home");
           break;
         case "database_admin":
           setRedirect("/database-admin");
@@ -60,6 +61,10 @@ function InitialRedirect() {
 }
 
 function App() {
+  const sharedRoles = ENABLE_COLLEGE_ADMIN
+    ? ["candidate", "recruiter", "admin", "database_admin"]
+    : ["candidate", "recruiter", "database_admin"];
+
   return (
     <Router>
       <Routes>
@@ -88,7 +93,10 @@ function App() {
         
         {/* Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/collegeadmins" element={<CollegeAdmins />} />
+          <Route
+            path="/collegeadmins"
+            element={ENABLE_COLLEGE_ADMIN ? <CollegeAdmins /> : <Navigate to="/home" replace />}
+          />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["database_admin"]} />}>
@@ -98,7 +106,7 @@ function App() {
         </Route>
         
         {/* Shared Routes (all logged-in users) */}
-        <Route element={<ProtectedRoute allowedRoles={["candidate", "recruiter", "admin", "database_admin"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={sharedRoles} />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/jobs" element={<JobListings />} />

@@ -270,7 +270,7 @@ export default function Profile() {
       <div className="profile-header">
         <div className="profile-back">
           <button onClick={() => navigate(-1)} className="back-button">
-            â† Back
+            Back
           </button>
         </div>
         <h1>My Profile</h1>
@@ -302,13 +302,13 @@ export default function Profile() {
               <h2>{formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}` : "Complete Your Profile"}</h2>
               <p className="profile-email">{user?.email}</p>
               <p className="profile-role">
-                {user?.role === "candidate" && "👤 Candidate"}
-                {user?.role === "recruiter" && "💼 Recruiter"}
-                {user?.role === "admin" && "🏛️ College Admin"}
+                {user?.role === "candidate" && "Candidate"}
+                {user?.role === "recruiter" && "Recruiter"}
+                {user?.role === "admin" && "College Admin"}
               </p>
               {user?.role === "candidate" && profile?.resumeUrl && (
                 <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer" className="resume-link">
-                  📄 View Resume
+                  View Resume
                 </a>
               )}
             </div>
@@ -319,7 +319,7 @@ export default function Profile() {
               className={`profile-tab ${activeTab === "personal" ? "active" : ""}`}
               onClick={() => setActiveTab("personal")}
             >
-              👤 Personal Info
+              Personal Info
             </button>
             
             {user?.role === "candidate" && (
@@ -327,7 +327,7 @@ export default function Profile() {
                 className={`profile-tab ${activeTab === "professional" ? "active" : ""}`}
                 onClick={() => setActiveTab("professional")}
               >
-                💼 Professional Details
+                Professional Details
               </button>
             )}
             
@@ -336,7 +336,7 @@ export default function Profile() {
                 className={`profile-tab ${activeTab === "company" ? "active" : ""}`}
                 onClick={() => setActiveTab("company")}
               >
-                🏢 Company Info
+                Company Info
               </button>
             )}
             
@@ -345,7 +345,7 @@ export default function Profile() {
                 className={`profile-tab ${activeTab === "college" ? "active" : ""}`}
                 onClick={() => setActiveTab("college")}
               >
-                🏛️ College Info
+                College Info
               </button>
             )}
             
@@ -353,7 +353,7 @@ export default function Profile() {
               className={`profile-tab ${activeTab === "security" ? "active" : ""}`}
               onClick={() => setActiveTab("security")}
             >
-              🔒 Security
+              Security
             </button>
           </div>
         </div>
@@ -552,6 +552,7 @@ export default function Profile() {
     </div>
   );
 }
+
 
 
 

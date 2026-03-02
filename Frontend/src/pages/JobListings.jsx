@@ -85,7 +85,7 @@ export default function JobListings() {
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       {/* Header */}
       <header style={{
-        background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+        background: 'linear-gradient(135deg, #4A70A9, #4A70A9)',
         color: 'white',
         padding: '2rem',
         textAlign: 'center'
@@ -159,7 +159,7 @@ export default function JobListings() {
             onClick={handleSearch}
             style={{
               padding: '0.75rem 2rem',
-              background: '#4f46e5',
+              background: '#4A70A9',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -179,7 +179,7 @@ export default function JobListings() {
               width: '50px',
               height: '50px',
               border: '4px solid #e5e7eb',
-              borderTop: '4px solid #4f46e5',
+              borderTop: '4px solid #4A70A9',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
               margin: '0 auto'
@@ -226,15 +226,15 @@ export default function JobListings() {
                       {job.title}
                     </h3>
                     {job.company_name && (
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: '#4f46e5', fontWeight: '500' }}>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: '#4A70A9', fontWeight: '500' }}>
                         {job.company_name}
                       </p>
                     )}
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.9rem', color: '#6b7280' }}>
-                      {job.location && <span>📍 {job.location}</span>}
-                      {job.employment_type && <span>💼 {job.employment_type}</span>}
-                      {job.salary_range && <span>💰 {job.salary_range}</span>}
-                      {job.experience_level && <span>📊 {job.experience_level}</span>}
+                      {job.location && <span>Location: {job.location}</span>}
+                      {job.employment_type && <span>Type: {job.employment_type}</span>}
+                      {job.salary_range && <span>Salary: {job.salary_range}</span>}
+                      {job.experience_level && <span>Experience: {job.experience_level}</span>}
                     </div>
                   </div>
                   <span style={{
@@ -274,8 +274,8 @@ export default function JobListings() {
                           key={idx}
                           style={{
                             padding: '0.4rem 0.8rem',
-                            background: '#eef2ff',
-                            color: '#4f46e5',
+                            background: '#ffffff',
+                            color: '#4A70A9',
                             borderRadius: '20px',
                             fontSize: '0.85rem',
                             fontWeight: '500'
@@ -299,7 +299,7 @@ export default function JobListings() {
                     disabled={appliedJobs.has(job.id)}
                     style={{
                       padding: '0.75rem 2rem',
-                      background: appliedJobs.has(job.id) ? '#10b981' : '#4f46e5',
+                      background: appliedJobs.has(job.id) ? '#4A70A9' : '#4A70A9',
                       color: 'white',
                       border: 'none',
                       borderRadius: '8px',
@@ -309,14 +309,14 @@ export default function JobListings() {
                       opacity: appliedJobs.has(job.id) ? 0.7 : 1
                     }}
                   >
-                    {appliedJobs.has(job.id) ? '✓ Applied' : 'Apply Now'}
+                    {appliedJobs.has(job.id) ? 'Applied' : 'Apply Now'}
                   </button>
                   <button
                     style={{
                       padding: '0.75rem 1.5rem',
                       background: 'transparent',
-                      color: '#4f46e5',
-                      border: '2px solid #4f46e5',
+                      color: '#4A70A9',
+                      border: '2px solid #4A70A9',
                       borderRadius: '8px',
                       fontSize: '1rem',
                       fontWeight: '600',

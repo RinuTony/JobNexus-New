@@ -195,7 +195,7 @@ export default function RecruiterJobs() {
   return (
     <>
       <header className="recruiter-jobs-header">
-        <div>
+        <div className="recruiter-jobs-header-copy">
           <h1>Posted Jobs</h1>
           <p>Manage all jobs you posted from one page.</p>
         </div>

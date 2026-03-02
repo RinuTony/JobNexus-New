@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ProfileIcon from "./ProfileIcon";
 import "./Home.css";
+import { ENABLE_COLLEGE_ADMIN } from "../config/featureFlags";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Home() {
             navigate("/recruiters");
             break;
           case "admin":
-            navigate("/collegeadmins");
+            navigate(ENABLE_COLLEGE_ADMIN ? "/collegeadmins" : "/home");
             break;
           case "database_admin":
             navigate("/database-admin");
@@ -107,43 +108,49 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="card">
-            <span className="role-badge admin">College Admin</span>
-            <h2>Campus Connect</h2>
-            <ul>
-              <li>Bulk upload student resumes</li>
-              <li>Match requirement of recruiters</li>
-              <li>Track application and hiring status</li>
-              <li>Build bridges between talent & opportunity</li>
-            </ul>
-            <button 
-              className="btn admin" 
-              onClick={() => handleRoleBasedNavigation("admin")}
-            >
-              {loggedIn && userRole === "admin" 
-                ? "Go to Dashboard" 
-                : loggedIn 
-                  ? "Switch to Admin" 
-                  : "Onboard as Admin"
-              }
-            </button>
-          </div>
+          {ENABLE_COLLEGE_ADMIN && (
+            <div className="card">
+              <span className="role-badge admin">College Admin</span>
+              <h2>Campus Connect</h2>
+              <ul>
+                <li>Bulk upload student resumes</li>
+                <li>Match requirement of recruiters</li>
+                <li>Track application and hiring status</li>
+                <li>Build bridges between talent & opportunity</li>
+              </ul>
+              <button 
+                className="btn admin" 
+                onClick={() => handleRoleBasedNavigation("admin")}
+              >
+                {loggedIn && userRole === "admin" 
+                  ? "Go to Dashboard" 
+                  : loggedIn 
+                    ? "Switch to Admin" 
+                    : "Onboard as Admin"
+                }
+              </button>
+            </div>
+          )}
         </div>
 
         {loggedIn && (
           <div className="user-status-card" style={{
             marginTop: "2rem",
             padding: "1.5rem",
-            background: "#f0f9ff",
-            border: "1px solid #bae6fd",
+            background: "#ffffff",
+            border: "1px solid #4A70A9",
             borderRadius: "12px",
             textAlign: "center"
           }}>
-            <p style={{ margin: 0, color: "#0369a1", fontWeight: "500" }}>
-              👋 Welcome back! You are logged in as a <strong>{userRole}</strong>.
+            <p style={{ margin: 0, color: "#4A70A9", fontWeight: "500" }}>
+              Welcome back! You are logged in as a <strong>{userRole}</strong>.
               {userRole === "candidate" && " Explore job opportunities and enhance your career."}
               {userRole === "recruiter" && " Find the perfect candidates for your organization."}
-              {userRole === "admin" && " Manage student placements and connect with recruiters."}
+              {userRole === "admin" && (
+                ENABLE_COLLEGE_ADMIN
+                  ? " Manage student placements and connect with recruiters."
+                  : " College Admin dashboard is temporarily hidden."
+              )}
               {userRole === "database_admin" && " Manage system-wide and database-level controls."}
             </p>
             <div style={{ marginTop: "1rem", display: "flex", gap: "10px", justifyContent: "center" }}>
@@ -152,8 +159,8 @@ export default function Home() {
                 style={{
                   padding: "0.5rem 1rem",
                   background: "transparent",
-                  border: "1px solid #0369a1",
-                  color: "#0369a1",
+                  border: "1px solid #4A70A9",
+                  color: "#4A70A9",
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
@@ -168,9 +175,9 @@ export default function Home() {
                 }}
                 style={{
                   padding: "0.5rem 1rem",
-                  background: "#fef2f2",
-                  border: "1px solid #dc2626",
-                  color: "#dc2626",
+                  background: "#ffffff",
+                  border: "1px solid #4A70A9",
+                  color: "#4A70A9",
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
@@ -186,19 +193,19 @@ export default function Home() {
             marginTop: "3rem",
             textAlign: "center",
             padding: "2rem",
-            background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+            background: "#ffffff",
             borderRadius: "12px",
-            border: "1px solid #e2e8f0"
+            border: "1px solid #4A70A9"
           }}>
             <h3 style={{ marginBottom: "1rem", color: "#1e293b" }}>Ready to Get Started?</h3>
-            <p style={{ marginBottom: "1.5rem", color: "#64748b" }}>
+            <p style={{ marginBottom: "1.5rem", color: "#4A70A9" }}>
               Join thousands of candidates, recruiters, and college admins who are transforming careers and hiring.
             </p>
             <button 
               onClick={() => navigate("/login")}
               style={{
                 padding: "0.75rem 2rem",
-                background: "#4f46e5",
+                background: "#4A70A9",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
@@ -207,8 +214,8 @@ export default function Home() {
                 cursor: "pointer",
                 transition: "all 0.3s ease"
               }}
-              onMouseOver={(e) => e.target.style.background = "#4338ca"}
-              onMouseOut={(e) => e.target.style.background = "#4f46e5"}
+              onMouseOver={(e) => e.target.style.background = "#4A70A9"}
+              onMouseOut={(e) => e.target.style.background = "#4A70A9"}
             >
               Sign In / Create Account
             </button>
@@ -220,4 +227,5 @@ export default function Home() {
     </>
   );
 }
+
 

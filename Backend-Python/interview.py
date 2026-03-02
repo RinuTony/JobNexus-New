@@ -3,6 +3,7 @@ import base64
 import hashlib
 import time
 import fitz  # PyMuPDF package
+import requests
 from flask import Flask, request, jsonify, render_template
 import google.generativeai as genai
 import json
@@ -10,7 +11,6 @@ import logging
 from typing import Optional, Tuple
 from dotenv import load_dotenv
 from flask_cors import CORS
-from google.cloud import speech
 from google.cloud import texttospeech
 
 # Setup
@@ -21,6 +21,19 @@ log = logging.getLogger(__name__)
 app = Flask(__name__)
 # CORS configuration - IMPORTANT!
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+ASSEMBLYAI_BASE_URL = os.getenv("ASSEMBLYAI_BASE_URL", "https://api.assemblyai.com/v2").rstrip("/")
+ASSEMBLYAI_API_KEY = (os.getenv("ASSEMBLYAI_API_KEY") or "").strip()
+ASSEMBLYAI_POLL_INTERVAL_SECONDS = float(os.getenv("ASSEMBLYAI_POLL_INTERVAL_SECONDS", "0.8"))
+ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS = int(os.getenv("ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS", "45"))
+ASSEMBLYAI_LANGUAGE_CODE = (os.getenv("ASSEMBLYAI_LANGUAGE_CODE", "en") or "en").strip()
+ASSEMBLYAI_SPEECH_MODELS = [
+    model.strip()
+    for model in (os.getenv("ASSEMBLYAI_SPEECH_MODELS", "universal-2") or "").split(",")
+    if model.strip()
+]
+if not ASSEMBLYAI_SPEECH_MODELS:
+    ASSEMBLYAI_SPEECH_MODELS = ["universal-2"]
 
 # Gemini API Configuration 
 try:
@@ -37,14 +50,12 @@ except Exception as e:
     log.error(f"Error configuring Gemini API: {e}")
     model = None
 
-# Google Cloud Speech / TTS Configuration
+# Google Cloud TTS Configuration
 try:
-    speech_client = speech.SpeechClient()
     tts_client = texttospeech.TextToSpeechClient()
-    log.info("--- Google Cloud Speech and TTS clients initialized ---")
+    log.info("--- Google Cloud TTS client initialized ---")
 except Exception as e:
-    log.error(f"Error initializing Google Cloud clients: {e}")
-    speech_client = None
+    log.error(f"Error initializing Google Cloud TTS client: {e}")
     tts_client = None
 
 # ... rest of your code remains the same ...
@@ -99,31 +110,93 @@ def transcribe_audio(
     audio_format: Optional[str] = None,
     sample_rate_hz: Optional[int] = None,
 ) -> Optional[str]:
-    """Transcribe base64 audio using Google STT."""
-    if not speech_client or not audio_base64:
+    """Transcribe base64 audio using AssemblyAI STT."""
+    if not audio_base64:
         return None
 
     try:
+        if not ASSEMBLYAI_API_KEY:
+            log.error("ASSEMBLYAI_API_KEY is not configured in Backend-Python/.env")
+            return None
+
         audio_bytes = base64.b64decode(audio_base64)
-
-        encoding_map = {
-            "linear16": speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            "ogg_opus": speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
-            "webm_opus": speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-            "mp3": speech.RecognitionConfig.AudioEncoding.MP3,
-        }
-        encoding = encoding_map.get((audio_format or "linear16").lower(), speech.RecognitionConfig.AudioEncoding.LINEAR16)
-
-        config = speech.RecognitionConfig(
-            encoding=encoding,
-            sample_rate_hertz=sample_rate_hz or 16000,
-            language_code=os.getenv("STT_LANG", "en-US"),
+        upload_response = requests.post(
+            f"{ASSEMBLYAI_BASE_URL}/upload",
+            headers={
+                "authorization": ASSEMBLYAI_API_KEY,
+                "content-type": "application/octet-stream",
+            },
+            data=audio_bytes,
+            timeout=30,
         )
-        audio = speech.RecognitionAudio(content=audio_bytes)
-        response = speech_client.recognize(config=config, audio=audio)
-        if not response.results:
-            return ""
-        return " ".join(result.alternatives[0].transcript for result in response.results)
+        if upload_response.status_code >= 300:
+            log.error(f"AssemblyAI upload failed ({upload_response.status_code}): {upload_response.text}")
+            return None
+
+        upload_url = (upload_response.json() or {}).get("upload_url")
+        if not upload_url:
+            log.error("AssemblyAI upload did not return upload_url")
+            return None
+
+        language_code = ASSEMBLYAI_LANGUAGE_CODE.strip().lower()
+        if language_code.startswith("en"):
+            language_code = "en"
+
+        transcript_payload = {
+            "audio_url": upload_url,
+            "speech_models": ASSEMBLYAI_SPEECH_MODELS,
+            "language_code": language_code,
+        }
+        transcript_response = requests.post(
+            f"{ASSEMBLYAI_BASE_URL}/transcript",
+            headers={
+                "authorization": ASSEMBLYAI_API_KEY,
+                "content-type": "application/json",
+            },
+            json=transcript_payload,
+            timeout=30,
+        )
+        if transcript_response.status_code >= 300:
+            log.error(f"AssemblyAI transcript request failed ({transcript_response.status_code}): {transcript_response.text}")
+            return None
+
+        transcript_id = (transcript_response.json() or {}).get("id")
+        if not transcript_id:
+            log.error("AssemblyAI transcript request did not return id")
+            return None
+
+        started = time.time()
+        while (time.time() - started) <= ASSEMBLYAI_TRANSCRIBE_TIMEOUT_SECONDS:
+            status_response = requests.get(
+                f"{ASSEMBLYAI_BASE_URL}/transcript/{transcript_id}",
+                headers={"authorization": ASSEMBLYAI_API_KEY},
+                timeout=30,
+            )
+            if status_response.status_code >= 300:
+                log.error(
+                    f"AssemblyAI transcript polling failed ({status_response.status_code}): {status_response.text}"
+                )
+                return None
+
+            payload = status_response.json() or {}
+            status = str(payload.get("status") or "").lower()
+            if status == "completed":
+                return str(payload.get("text") or "").strip()
+            if status == "error":
+                error_text = str(payload.get("error") or "unknown error")
+                lowered = error_text.lower()
+                if (
+                    "no spoken audio" in lowered
+                    or "transcoding failed" in lowered
+                    or "does not appear to contain audio" in lowered
+                ):
+                    return ""
+                log.error(f"AssemblyAI transcription error: {error_text}")
+                return None
+            time.sleep(ASSEMBLYAI_POLL_INTERVAL_SECONDS)
+
+        log.error("AssemblyAI transcription timed out while waiting for completion")
+        return None
     except Exception as e:
         log.error(f"STT error: {e}")
         return None

@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import ProfileIcon from "./ProfileIcon";
+import "./Recruiters.css";
 
 const API_BASE = "http://localhost:8000";
 
 export default function InterviewPrep() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { jobId, jobTitle, resumeSelection } = location.state || {};
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -15,7 +18,6 @@ export default function InterviewPrep() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [feedback, setFeedback] = useState({});
-  const [feedbackAudio, setFeedbackAudio] = useState({});
   const [loading, setLoading] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
@@ -26,30 +28,6 @@ export default function InterviewPrep() {
   const [sessionsError, setSessionsError] = useState("");
   const [reviewSession, setReviewSession] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [recordedAnswers, setRecordedAnswers] = useState({});
-  const [recordingError, setRecordingError] = useState("");
-  const [autoReadQuestions, setAutoReadQuestions] = useState(true);
-  const mediaRecorderRef = useRef(null);
-  const mediaStreamRef = useRef(null);
-  const recordedChunksRef = useRef([]);
-
-  const stopMediaTracks = useCallback(() => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      stopMediaTracks();
-    };
-  }, [stopMediaTracks]);
-
   useEffect(() => {
     if (jobId && !jobDetails) {
       fetchJobDetails(jobId);
@@ -67,79 +45,6 @@ export default function InterviewPrep() {
       console.error("Error fetching job details:", error);
     }
   };
-
-  const startOrResumeInterview = useCallback(async () => {
-    setLoading(true);
-    setErrorMessage("");
-    setInterviewQuestions([]);
-    setCurrentQuestionIndex(0);
-    setAnswers({});
-    setFeedback({});
-    setFeedbackAudio({});
-    setRecordedAnswers({});
-    setRecordingError("");
-    setFinalScore(null);
-
-    try {
-      const resumeResponse = await fetch(`${API_BASE}/api/interview/resume`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidate_id: String(user.id),
-          job_id: String(jobId),
-        }),
-      });
-
-      if (resumeResponse.ok) {
-        const resumeData = await resumeResponse.json();
-        if (resumeData.total_questions) {
-          setTotalQuestions(resumeData.total_questions);
-        }
-        if (resumeData.success && resumeData.next_question) {
-          setSessionId(resumeData.session_id);
-          appendQuestion(resumeData.next_question);
-          setInterviewStarted(true);
-          return;
-        }
-        if (resumeData.done) {
-          setFinalScore(resumeData.final_score ?? 0);
-          setInterviewStarted(false);
-          return;
-        }
-      }
-
-      const startResponse = await fetch(`${API_BASE}/api/interview/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidate_id: String(user.id),
-          job_id: String(jobId),
-          question_count: 10,
-          include_audio: true,
-          resume_type: resumeSelection?.source === "builder" ? "builder" : resumeSelection?.source === "uploaded" ? "uploaded" : "latest",
-          resume_id: resumeSelection?.source === "builder" ? String(resumeSelection.id) : null,
-          resume_filename: resumeSelection?.source === "uploaded" ? resumeSelection.filename : null,
-        }),
-      });
-
-      const startData = await startResponse.json();
-      if (!startResponse.ok) {
-        throw new Error(startData.detail || "Failed to start interview");
-      }
-
-      setSessionId(startData.session_id);
-      setTotalQuestions(startData.total_questions || 10);
-      appendQuestion(startData.next_question);
-      setInterviewStarted(true);
-    } catch (err) {
-      console.error(err);
-      setErrorMessage(
-        "Unable to start interview. Make sure the FastAPI and interview services are running."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [jobId, resumeSelection, user?.id]);
 
   useEffect(() => {
     // Keep landing state so user can choose start new or review.
@@ -181,9 +86,6 @@ export default function InterviewPrep() {
     setCurrentQuestionIndex(0);
     setAnswers({});
     setFeedback({});
-    setFeedbackAudio({});
-    setRecordedAnswers({});
-    setRecordingError("");
     setFinalScore(null);
     setReviewSession(null);
 
@@ -195,7 +97,7 @@ export default function InterviewPrep() {
           candidate_id: String(user.id),
           job_id: String(jobId),
           question_count: 10,
-          include_audio: true,
+          include_audio: false,
           resume_type: resumeSelection?.source === "builder" ? "builder" : resumeSelection?.source === "uploaded" ? "uploaded" : "latest",
           resume_id: resumeSelection?.source === "builder" ? String(resumeSelection.id) : null,
           resume_filename: resumeSelection?.source === "uploaded" ? resumeSelection.filename : null,
@@ -254,143 +156,11 @@ export default function InterviewPrep() {
     setAnswers(newAnswers);
   };
 
-  const toAudioSrc = (base64, mime) => {
-    if (!base64 || !mime) return "";
-    return `data:${mime};base64,${base64}`;
-  };
-
-  const blobToBase64 = (blob) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = String(reader.result || "");
-        const base64 = result.includes(",") ? result.split(",")[1] : "";
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-  const detectAudioFormat = (mimeType) => {
-    const mime = (mimeType || "").toLowerCase();
-    if (mime.includes("webm")) return "webm_opus";
-    if (mime.includes("ogg")) return "ogg_opus";
-    if (mime.includes("mp3") || mime.includes("mpeg")) return "mp3";
-    return "linear16";
-  };
-
-  const playCurrentQuestion = useCallback(() => {
-    const question = interviewQuestions[currentQuestionIndex];
-    if (!question) return;
-
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-
-    const audioSrc = toAudioSrc(question.question_audio_base64, question.question_audio_mime);
-    if (audioSrc) {
-      const audio = new Audio(audioSrc);
-      audio.play().catch(() => {});
-      return;
-    }
-
-    if (window.speechSynthesis && question.question_text) {
-      const utterance = new SpeechSynthesisUtterance(question.question_text);
-      utterance.lang = "en-US";
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [currentQuestionIndex, interviewQuestions]);
-
-  useEffect(() => {
-    if (!interviewStarted || !autoReadQuestions || !currentQuestion) return;
-    playCurrentQuestion();
-  }, [autoReadQuestions, currentQuestion, interviewStarted, playCurrentQuestion]);
-
-  const startRecording = async () => {
-    try {
-      setRecordingError("");
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Microphone recording is not supported in this browser.");
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-      recordedChunksRef.current = [];
-
-      const preferredMime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "";
-      const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
-
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      setRecording(true);
-    } catch (err) {
-      console.error(err);
-      setRecordingError(err.message || "Unable to start recording.");
-      stopMediaTracks();
-    }
-  };
-
-  const stopRecording = async () => {
-    const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === "inactive") return;
-
-    await new Promise((resolve) => {
-      recorder.onstop = async () => {
-        try {
-          const mimeType = recorder.mimeType || "audio/webm";
-          const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-          const base64 = await blobToBase64(blob);
-          const objectUrl = URL.createObjectURL(blob);
-          setRecordedAnswers((prev) => {
-            const existing = prev[currentQuestionIndex];
-            if (existing?.url) {
-              URL.revokeObjectURL(existing.url);
-            }
-            return {
-              ...prev,
-              [currentQuestionIndex]: { base64, mime: mimeType, url: objectUrl },
-            };
-          });
-        } catch (err) {
-          console.error(err);
-          setRecordingError("Failed to process recorded audio.");
-        } finally {
-          stopMediaTracks();
-          setRecording(false);
-          resolve();
-        }
-      };
-      recorder.stop();
-    });
-  };
-
-  const clearCurrentRecording = () => {
-    const existing = recordedAnswers[currentQuestionIndex];
-    if (existing?.url) {
-      URL.revokeObjectURL(existing.url);
-    }
-    setRecordedAnswers((prev) => {
-      const next = { ...prev };
-      delete next[currentQuestionIndex];
-      return next;
-    });
-  };
-
-
   const evaluateAnswer = async () => {
     if (!currentQuestion) return;
     const currentAnswer = answers[currentQuestionIndex] || "";
-    const audioAnswer = recordedAnswers[currentQuestionIndex];
-    if (!currentAnswer.trim() && !audioAnswer?.base64) {
-      alert("Please type your answer or record your answer before evaluating.");
+    if (!currentAnswer.trim()) {
+      alert("Please type or speak your answer before evaluating.");
       return;
     }
 
@@ -404,11 +174,11 @@ export default function InterviewPrep() {
         body: JSON.stringify({
           session_id: sessionId,
           question_id: currentQuestion.id,
-          answer_text: currentAnswer.trim() || null,
-          answer_audio_base64: audioAnswer?.base64 || null,
-          audio_format: audioAnswer?.mime ? detectAudioFormat(audioAnswer.mime) : null,
+          answer_text: currentAnswer.trim(),
+          answer_audio_base64: null,
+          audio_format: null,
           sample_rate_hz: null,
-          include_audio: true,
+          include_audio: false,
         }),
       });
 
@@ -418,13 +188,6 @@ export default function InterviewPrep() {
       }
 
       setFeedback((prev) => ({ ...prev, [currentQuestionIndex]: data.feedback }));
-      setFeedbackAudio((prev) => ({
-        ...prev,
-        [currentQuestionIndex]: {
-          base64: data.feedback_audio_base64,
-          mime: data.feedback_audio_mime,
-        },
-      }));
 
       if (data.answer_text) {
         setAnswers((prev) => ({ ...prev, [currentQuestionIndex]: data.answer_text }));
@@ -512,9 +275,24 @@ export default function InterviewPrep() {
   };
 
   return (
-    <div className="interview-prep-container" style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
-      <h2>AI Interview Preparation</h2>
+    <>
+      <header className="dashboard-header">
+        <div className="dashboard-header-copy">
+          <h1 className="dashboard-banner-title">Interview Preparation</h1>
+          <p className="dashboard-banner-subtitle">Practice answers and review interview sessions</p>
+        </div>
+        <div className="dashboard-header-actions-row">
+          <button className="btn outline" onClick={() => navigate("/candidates")}>
+            Back to Dashboard
+          </button>
+          <ProfileIcon />
+        </div>
+      </header>
 
+      <div
+        className="interview-prep-container"
+        style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}
+      >
       {!jobId && (
         <div style={{ marginBottom: "20px", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "6px" }}>
           <p style={{ margin: 0, color: "#b91c1c", fontSize: "14px" }}>
@@ -526,16 +304,17 @@ export default function InterviewPrep() {
       {jobDetails && (
         <div
           style={{
-            backgroundColor: "#f0f9ff",
+            backgroundColor: "#ffffff",
             padding: "15px",
             borderRadius: "8px",
             marginBottom: "20px",
-            borderLeft: "4px solid #3b82f6",
+            border: "1px solid #d7e3f7",
+            borderLeft: "4px solid #4A70A9",
           }}
         >
-          <h3 style={{ margin: 0, color: "#1e40af" }}>Preparing for: {jobDetails.title}</h3>
+          <h3 style={{ margin: 0, color: "#1f2d3d" }}>Preparing for: {jobDetails.title}</h3>
           {jobDetails.description && (
-            <p style={{ marginTop: "8px", color: "#374151", fontSize: "0.95rem" }}>
+            <p style={{ marginTop: "8px", color: "#4b5563", fontSize: "0.95rem" }}>
               {jobDetails.description.length > 200
                 ? `${jobDetails.description.substring(0, 200)}...`
                 : jobDetails.description}
@@ -553,29 +332,16 @@ export default function InterviewPrep() {
       {loading && <p>Loading interview...</p>}
 
       {!loading && !interviewStarted && (
-        <div style={{ marginBottom: "20px", padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px" }}>
+        <div style={{ marginBottom: "20px", padding: "16px", border: "1px solid #d7e3f7", borderRadius: "8px", backgroundColor: "#ffffff" }}>
           <p style={{ margin: "0 0 12px 0" }}>
-            Ready to start your interview? You can resume the latest session or start a new one.
+            Ready to start your interview?
           </p>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <button
-              onClick={startOrResumeInterview}
-              style={{
-                padding: "10px 16px",
-                backgroundColor: "#4f46e5",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
-              Resume Latest
-            </button>
             <button
               onClick={startNewInterview}
               style={{
                 padding: "10px 16px",
-                backgroundColor: "#059669",
+                backgroundColor: "#4A70A9",
                 color: "white",
                 border: "none",
                 borderRadius: "6px",
@@ -679,38 +445,6 @@ export default function InterviewPrep() {
             </h4>
             <p style={{ fontSize: "18px", marginBottom: "12px" }}>{currentQuestion.question_text}</p>
 
-            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "12px" }}>
-              <button
-                onClick={playCurrentQuestion}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#1d4ed8",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                Speak Question
-              </button>
-              <label style={{ fontSize: "14px", color: "#374151", display: "flex", alignItems: "center", gap: "6px" }}>
-                <input
-                  type="checkbox"
-                  checked={autoReadQuestions}
-                  onChange={(e) => setAutoReadQuestions(e.target.checked)}
-                />
-                Auto-read next questions
-              </label>
-            </div>
-
-            {currentQuestion.question_audio_base64 && (
-              <audio
-                controls
-                src={toAudioSrc(currentQuestion.question_audio_base64, currentQuestion.question_audio_mime)}
-                style={{ width: "100%", marginBottom: "16px" }}
-              />
-            )}
-
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Your Answer:</label>
             <textarea
@@ -728,71 +462,6 @@ export default function InterviewPrep() {
               }}
             />
           </div>
-
-            <div style={{ marginBottom: "16px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {!recording ? (
-                <button
-                  onClick={startRecording}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#2563eb",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Record Answer
-                </button>
-              ) : (
-                <button
-                  onClick={stopRecording}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#dc2626",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Stop Recording
-                </button>
-              )}
-              {recordedAnswers[currentQuestionIndex]?.base64 && (
-                <button
-                  onClick={clearCurrentRecording}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#e5e7eb",
-                    color: "#111827",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Clear Recording
-                </button>
-              )}
-            </div>
-
-            {recording && (
-              <div style={{ marginBottom: "12px", color: "#b91c1c", fontWeight: "600" }}>
-                Recording in progress...
-              </div>
-            )}
-            {recordingError && (
-              <div style={{ marginBottom: "12px", color: "#b91c1c" }}>
-                {recordingError}
-              </div>
-            )}
-            {recordedAnswers[currentQuestionIndex]?.url && (
-              <audio
-                controls
-                src={recordedAnswers[currentQuestionIndex].url}
-                style={{ width: "100%", marginBottom: "16px" }}
-              />
-            )}
 
             <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
               <button
@@ -861,17 +530,6 @@ export default function InterviewPrep() {
                   ? `(Score: ${feedback[currentQuestionIndex].score}/10)`
                   : ""}
               </h4>
-
-              {feedbackAudio[currentQuestionIndex]?.base64 && (
-                <audio
-                  controls
-                  src={toAudioSrc(
-                    feedbackAudio[currentQuestionIndex].base64,
-                    feedbackAudio[currentQuestionIndex].mime
-                  )}
-                  style={{ width: "100%", marginBottom: "16px" }}
-                />
-              )}
 
               {feedback[currentQuestionIndex].error ? (
                 <p style={{ color: "#dc2626" }}>Error: {feedback[currentQuestionIndex].error}</p>
@@ -1012,7 +670,8 @@ export default function InterviewPrep() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

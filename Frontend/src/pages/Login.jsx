@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Login.css";
+import { ENABLE_COLLEGE_ADMIN } from "../config/featureFlags";
 
 const API_BASE = process.env.REACT_APP_PHP_API_BASE || "http://localhost/JobNexus/Backend-PHP/api";
 
@@ -29,7 +30,7 @@ export default function Login() {
           navigate("/recruiters", { replace: true });
           break;
         case "admin":
-          navigate("/collegeadmins", { replace: true });
+          navigate(ENABLE_COLLEGE_ADMIN ? "/collegeadmins" : "/home", { replace: true });
           break;
         case "database_admin":
           navigate("/database-admin", { replace: true });
@@ -51,6 +52,12 @@ export default function Login() {
       setRole("admin");
     }
   }, [isLogin, role]);
+
+  React.useEffect(() => {
+    if (!ENABLE_COLLEGE_ADMIN && role === "admin") {
+      setRole("candidate");
+    }
+  }, [role]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,7 +100,7 @@ export default function Login() {
             navigate("/recruiters");
             break;
           case "admin":
-            navigate("/collegeadmins");
+            navigate(ENABLE_COLLEGE_ADMIN ? "/collegeadmins" : "/home");
             break;
           case "database_admin":
             navigate("/database-admin");
@@ -142,7 +149,12 @@ export default function Login() {
 
           {(!isLogin || role !== "database_admin") && (
             <div className="role-selection-compact inside-form">
-              <div className="role-tabs-compact">
+              <div
+                className="role-tabs-compact"
+                style={{
+                  gridTemplateColumns: ENABLE_COLLEGE_ADMIN ? "repeat(3, 1fr)" : "repeat(2, 1fr)"
+                }}
+              >
                 <button
                   className={`role-tab-compact ${role === "candidate" ? "active" : ""}`}
                   onClick={() => setRole("candidate")}
@@ -159,20 +171,22 @@ export default function Login() {
                   Recruiter
                 </button>
 
-                <button
-                  className={`role-tab-compact ${role === "admin" ? "active" : ""}`}
-                  onClick={() => setRole("admin")}
-                  type="button"
-                >
-                  Admin
-                </button>
+                {ENABLE_COLLEGE_ADMIN && (
+                  <button
+                    className={`role-tab-compact ${role === "admin" ? "active" : ""}`}
+                    onClick={() => setRole("admin")}
+                    type="button"
+                  >
+                    Admin
+                  </button>
+                )}
 
               </div>
 
               <div className="role-description-compact">
                 {role === "candidate" && "Find jobs, build your resume, and get AI-powered career guidance"}
                 {role === "recruiter" && "Post jobs, find candidates, and streamline your hiring process"}
-                {role === "admin" && "Manage student placements and connect with recruiters"}
+                {ENABLE_COLLEGE_ADMIN && role === "admin" && "Manage student placements and connect with recruiters"}
               </div>
             </div>
           )}

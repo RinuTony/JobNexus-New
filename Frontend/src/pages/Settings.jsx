@@ -12,7 +12,7 @@ export default function Settings() {
     <div className="settings-page">
       <div className="settings-header">
         <button onClick={() => navigate(-1)} className="back-button">
-          ← Back
+          Back
         </button>
         <h1>Settings</h1>
       </div>
@@ -42,7 +42,7 @@ export default function Settings() {
 
             {/* Placeholder content */}
             <div className="settings-placeholder">
-              🚧 {activeTab} settings coming soon
+              {activeTab} settings coming soon
             </div>
           </div>
         </section>
@@ -50,3 +50,4 @@ export default function Settings() {
     </div>
   );
 }
+
