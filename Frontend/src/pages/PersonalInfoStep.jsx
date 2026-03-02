@@ -254,8 +254,8 @@ const PersonalInfoStep = ({ data, updateData, user }) => {
         .form-group input:focus,
         .form-group textarea:focus {
           outline: none;
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+          border-color: #4A70A9;
+          box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.15);
         }
         
         .helper-text {

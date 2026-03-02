@@ -140,8 +140,8 @@ const SkillsStep = ({ data, updateData }) => {
         }
         
         .skill-tag {
-          background: #e0e7ff;
-          color: #3730a3;
+          background: #eaf1fb;
+          color: #1f2d3d;
           padding: 8px 12px;
           border-radius: 20px;
           display: flex;
@@ -191,7 +191,7 @@ const SkillsStep = ({ data, updateData }) => {
         
         .add-button {
           padding: 10px 20px;
-          background: #4f46e5;
+          background: #4A70A9;
           color: white;
           border: none;
           border-radius: 8px;
@@ -199,6 +199,10 @@ const SkillsStep = ({ data, updateData }) => {
           display: flex;
           align-items: center;
           gap: 6px;
+        }
+
+        .add-button:hover {
+          background: #2F4F79;
         }
         
         .predefined-skills {
@@ -253,9 +257,9 @@ const SkillsStep = ({ data, updateData }) => {
         }
         
         .skill-button.disabled {
-          background: #dcfce7;
-          color: #166534;
-          border-color: #86efac;
+          background: #eaf1fb;
+          color: #2F4F79;
+          border-color: #b9cceb;
           cursor: default;
         }
         

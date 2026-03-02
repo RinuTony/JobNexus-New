@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Save, AlertCircle } from "lucide-react";
 import ProfileIcon from "./ProfileIcon";
+import "./Recruiters.css";
 
 // Import steps
 import TemplateStep from "./TemplateStep";
@@ -205,22 +206,16 @@ const ResumeBuilder = () => {
 
   return (
     <div className="resume-builder">
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '1rem 2rem',
-        background: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1f2937' }}>Resume Builder</h1>
-          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
+      <header className="dashboard-header">
+        <div className="dashboard-header-copy">
+          <h1 className="dashboard-banner-title" style={{ fontSize: "2.25rem" }}>Resume Builder</h1>
+          <p className="dashboard-banner-subtitle">
             {jobTitle ? `Tailoring for: ${jobTitle}` : "Create a professional resume step by step"}
           </p>
         </div>
-        <ProfileIcon />
+        <div className="dashboard-header-actions-row">
+          <ProfileIcon />
+        </div>
       </header>
 
       <div className="builder-container">
@@ -378,13 +373,13 @@ const ResumeBuilder = () => {
         }
         
         .step-circle.active {
-          background: #4f46e5;
+          background: #4A70A9;
           color: white;
-          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+          box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.2);
         }
         
         .step-circle.completed {
-          background: #10b981;
+          background: #4A70A9;
           color: white;
         }
         
@@ -410,6 +405,10 @@ const ResumeBuilder = () => {
           padding: 2rem;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           min-height: 400px;
+        }
+
+        .step-content h2 {
+          color: #1f2d3d;
         }
         
         .builder-footer {
@@ -445,13 +444,13 @@ const ResumeBuilder = () => {
         }
         
         .nav-button.primary {
-          background: #4f46e5;
+          background: #4A70A9;
           color: white;
           border: none;
         }
         
         .nav-button.primary:hover:not(:disabled) {
-          background: #4338ca;
+          background: #2F4F79;
         }
         
         .nav-button.secondary {

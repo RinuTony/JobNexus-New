@@ -244,7 +244,8 @@ const ExperienceStep = ({ data, updateData }) => {
         
         .form-group input:focus {
           outline: none;
-          border-color: #4f46e5;
+          border-color: #4A70A9;
+          box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.15);
         }
         
         .date-group {
@@ -268,14 +269,14 @@ const ExperienceStep = ({ data, updateData }) => {
         }
         
         .bullet-point {
-          color: #4f46e5;
+          color: #4A70A9;
           font-size: 20px;
         }
         
         .add-bullet-btn {
           background: none;
           border: none;
-          color: #4f46e5;
+          color: #4A70A9;
           display: flex;
           align-items: center;
           gap: 6px;

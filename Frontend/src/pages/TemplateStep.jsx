@@ -186,8 +186,8 @@ const TemplateStep = ({ data, updateData }) => {
         }
         
         .template-card.selected {
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+          border-color: #4A70A9;
+          box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.2);
         }
         
         .template-thumbnail {
@@ -220,7 +220,7 @@ const TemplateStep = ({ data, updateData }) => {
         .select-btn {
           width: 100%;
           padding: 8px 12px;
-          background: #4f46e5;
+          background: #4A70A9;
           color: white;
           border: none;
           border-radius: 6px;
@@ -233,23 +233,24 @@ const TemplateStep = ({ data, updateData }) => {
         }
         
         .select-btn:hover {
-          background: #4338ca;
+          background: #2F4F79;
         }
         
         .select-btn.selected {
-          background: #10b981;
+          background: #4A70A9;
         }
         
         .selected-template-info {
           padding: 1.5rem;
-          background: #f0f9ff;
+          background: #ffffff;
           border-radius: 8px;
-          border-left: 4px solid #0ea5e9;
+          border: 1px solid #d7e3f7;
+          border-left: 4px solid #4A70A9;
         }
         
         .selected-template-info h3 {
           margin: 0 0 8px 0;
-          color: #0369a1;
+          color: #1f2d3d;
         }
         
         .no-selection {
